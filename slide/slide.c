@@ -53,7 +53,8 @@ int main (void) {
 
     // Read commands until EOF
     int instruction;
-    while (scanf("%d", &instruction) != EOF) {
+    int game_over = 0;
+    while ( !game_over && (scanf("%d", &instruction) != EOF) ) {
 
         // Move laser command
         if (instruction == 1) {
@@ -81,9 +82,58 @@ int main (void) {
                 col++;
             }
 
+            //Check if the game is won
+            int row = 0;
+            int is_empty = 1;
+            while (row < SIZE && is_empty) {
+                col = 0;
+                while (col < SIZE && is_empty) {
+                    // If index of map is not empty, the game is not won.
+                    if (map[row][col] != EMPTY) {
+                        is_empty = !is_empty;
+                    } 
+                    col++;
+                }
+                row++;
+            }
+            if (is_empty) {
+                print_map(map, laser_y);
+                printf("Game Won!\n");
+                game_over = 1;
+            }
+
+        // Shift Everything Left
+        } else if (instruction == 3) {
+            // Check if there are any stones in the leftmost column
+            int row = 0;
+            while (row < SIZE && !game_over) {
+                if (map[row][0] == STONE) {
+                    game_over = 1;
+                }
+                row++;
+            }
+
+            // If game is over, print Game Lost!. 
+            // Otherwise, move everything left.
+            if (game_over) {
+                print_map(map, laser_y);
+                printf("Game Lost!\n");    
+            } else {
+                for (row = 0; row < SIZE; row++) {
+                    for (int col = 1; col < SIZE; col++) {
+                        if (map[row][col] != EMPTY) {
+                            map[row][col-1] = map[row][col];
+                            map[row][col] = EMPTY;
+                        }
+                    }
+                }
+            }
+            
         }
 
-        print_map(map, laser_y);
+        if (!game_over) {
+            print_map(map, laser_y);
+        }
     }
 
 
