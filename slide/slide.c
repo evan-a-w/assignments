@@ -28,6 +28,9 @@
 #define CLOCKWISE 1
 #define COUNTER_CLOCKWISE 2
 
+#define TNT_MIN 4
+#define TNT_MAX 9
+
 void print_map(int map[SIZE][SIZE], int laser_y);
 
 // These functions correspond to different commands. Move laser is not included
@@ -35,6 +38,10 @@ void print_map(int map[SIZE][SIZE], int laser_y);
 void fire_laser(int map[SIZE][SIZE], int laser_y, bool *game_over);
 void shift_everything_left(int map[SIZE][SIZE], int laser_y, bool *game_over);
 void rotate_map(int map[SIZE][SIZE], bool *game_over, bool *is_rotated);
+
+double distance(int x1, int y1, int x2, int y2);
+void delete_in_line(int map[SIZE][SIZE], int laser_y, int col,
+                    int direction_x, int direction_y, int explosion_radius);
 
 int main (void) {
     // This line creates our 2D array called "map" and sets all
@@ -130,20 +137,59 @@ void print_map(int map[SIZE][SIZE], int laser_y) {
     }
 }
 
+// This function returns the distance between two points.
+
+double distance(int x1, int y1, int x2, int y2) {
+    return sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1));
+}
+
+// This function moves across the map from the position of the laser by a
+// given vector, and deletes all values inside a given radius from the starting
+// position. This is intended to be used to implement TNT explosions.
+
+void delete_in_line(int map[SIZE][SIZE], int laser_y, int col,
+                    int direction_x, int direction_y, int explosion_radius) {
+    int curr_row = laser_y;
+    int curr_col = col;
+
+    // Move in the given direction until outside of the explosion radius
+    // or outside of the bounds of the map.
+    while (distance(col, laser_y, curr_col, curr_row) < explosion_radius
+           && curr_col < SIZE && curr_row < SIZE) {
+        map[curr_row][curr_col] = EMPTY;
+        curr_col += direction_x;
+        curr_row += direction_y;
+    }
+}
+
 // This function fires the laser and removes any objects in its path, and prints
 // Game Won! if the map is empty.
 // This can change the map array and the game_over boolean.
 
 void fire_laser(int map[SIZE][SIZE], int laser_y, bool *game_over) {
     int col = 0; 
-    int destroyed_stones = 0;
+    int destroyed_blocks = 0;
 
     // Loop over the columns in the row where the laser is
-    while (col < SIZE && destroyed_stones < LASER_MAX) {
-        // Change stones to empty and increment destroyed stone counter
+    while (col < SIZE && destroyed_blocks < LASER_MAX) {
+        // Change stones to empty and increment destroyed blocks counter
         if (map[laser_y][col] == STONE) {
             map[laser_y][col] = EMPTY;
-            destroyed_stones++;
+            destroyed_blocks++;
+        
+        // TNT Blocks
+        } else if (TNT_MIN <= map[laser_y][col] && map[laser_y][col] <= TNT_MAX) {
+            int explosion_radius = map[laser_y][col];
+
+            // First delete blocks in the positive x direction
+            // Negative x is not needed because the laser came from there.
+            delete_in_line(map, laser_y, col, 1, 0, explosion_radius);
+            // Then in the positive y direction
+            delete_in_line(map, laser_y, col, 0, 1, explosion_radius);
+            // Then in the negative y direction
+            delete_in_line(map, laser_y, col, 0, -1, explosion_radius);
+
+            destroyed_blocks++;
         }
         col++;
     }
