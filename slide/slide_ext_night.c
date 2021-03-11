@@ -1,10 +1,10 @@
-// Slide
-// slide.c
+// Slide Night Extension
+// slide_ext.c
 //
 // This program was written by Evan Williams (z5368211)
-// on 11/03/2021
+// on 12/03/2021
 //
-// Stage 3
+// This is the slide program but with added functionality for the night mode map.
 
 #include <stdio.h>
 #include <stdlib.h>
