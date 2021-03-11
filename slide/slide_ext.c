@@ -248,7 +248,7 @@ void fire_laser(int map[SIZE][SIZE], int laser_y, bool *game_over,
     // If both are empty, game is over. Otherwise, set the respective
     // variables and move on.
     if (is_empty) {
-        if (inverted) {
+        if (*inverted) {
             *night_win = true;
             if (*day_win) {
                 *game_over = true;
