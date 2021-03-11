@@ -1,0 +1,33 @@
+[COMP1511 Extension Work]
+
+Write a summary of how you made the changes that you did:
+
+[E1:Summary] {{{
+
+}}}
+
+Write two tests to test your implementation of Extension 1 ("Night Realm").
+
+[E1:Test 1] {{{
+
+}}}
+[E1:Test 2] {{{
+
+}}}
+
+===========================================================================
+
+Write a summary of how you made the changes that you did:
+
+[E2:Summary] {{{
+
+}}}
+
+Write two tests to test your implementation of Extension 2 ("Mirror Blocks").
+
+[E2:Test 1] {{{
+
+}}}
+[E2:Test 2] {{{
+
+}}}
