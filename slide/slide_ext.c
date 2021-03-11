@@ -51,8 +51,9 @@ int rotated_column(int map[SIZE][SIZE], int direction, int curr_row);
 
 int main (void) {
     // This line creates our 2D array called "map" and sets all
-    // of the blocks in the map to EMPTY.
+    // of the blocks in the map to EMPTY. The night mode map is also created.
     int map[SIZE][SIZE] = {EMPTY};
+    int night_map[SIZE][SIZE] = {EMPTY};
 
     // This line creates our laser_y variable. The laser starts in the
     // middle of the map, at position 7.
@@ -65,6 +66,7 @@ int main (void) {
     // Create variables to track the state of the game.
     bool is_rotated = false;
     bool game_over = false;
+    bool map_is_empty = true;
 
     printf("Enter blocks:\n");
     // This is a loop that allows each block to be scanned.
@@ -75,6 +77,10 @@ int main (void) {
 
         // Only change values if the row and column numbers are valid.
         if (indices_are_valid(row, col)) {
+            // If the digit is negative, add it to the night mode map.
+            if (digit <= 0) {
+                
+            }
             map[row][col] = digit;
         }
     }
