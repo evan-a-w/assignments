@@ -2,9 +2,9 @@
 // slide.c
 //
 // This program was written by Evan Williams (z5368211)
-// on 11/03/2021
+// on DATE
 //
-// Stage 3
+// Version 1.0.0 (2021-03-08): Initial Assignment Release
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -40,10 +40,10 @@ void shift_everything_left(int map[SIZE][SIZE], int laser_y, bool *game_over);
 void rotate_map(int map[SIZE][SIZE], bool *game_over, bool *is_rotated);
 
 double distance(int x1, int y1, int x2, int y2);
-void explode_blocks(int map[SIZE][SIZE], int laser_y, int col,
-                    int explosion_radius);
-
-bool indices_are_valid(int row, int col);
+void delete_radius_in_direction(
+    int map[SIZE][SIZE], int laser_y, int col,
+    int direction_x, int explosion_radius
+);
 
 int main (void) {
     // This line creates our 2D array called "map" and sets all
@@ -53,6 +53,7 @@ int main (void) {
     // This line creates our laser_y variable. The laser starts in the
     // middle of the map, at position 7.
     int laser_y = SIZE / 2;
+
 
     int blocks;
     printf("How many blocks? ");
@@ -70,7 +71,7 @@ int main (void) {
         scanf("%d %d %d", &row, &col, &digit);
 
         // Only change values if the row and column numbers are valid.
-        if (indices_are_valid(row, col)) {
+        if (0 <= row && row < SIZE && 0 <= col && col < SIZE) {
             map[row][col] = digit;
         }
     }
@@ -78,7 +79,7 @@ int main (void) {
 
     print_map(map, laser_y);
 
-    // Read commands until EOF or the game is over
+    // Read commands until EOF
     int instruction;
     while ( !game_over && (scanf("%d", &instruction) != EOF) ) {
 
@@ -138,28 +139,52 @@ void print_map(int map[SIZE][SIZE], int laser_y) {
     }
 }
 
-// This function checks whether a row and column index are inside the map
-
-bool indices_are_valid(int row, int col) {
-    return (0 <= row && row < SIZE && 0 <= col && col < SIZE);
-}
-
 // This function returns the distance between two points.
 
 double distance(int x1, int y1, int x2, int y2) {
-    return sqrt(1.0 * ((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1)));
+    return sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1));
 }
-// This function loops over the map and deletes any blocks that are within a
-// given explosion radius (calculated by the distance function)
 
-void explode_blocks(int map[SIZE][SIZE], int laser_y, int col,
-                    int explosion_radius) {
-    for (int curr_row = 0; curr_row < SIZE; curr_row++) {
-        for (int curr_col = 0; curr_col < SIZE; curr_col++) {
-            if (distance(laser_y, col, curr_row, curr_col) < explosion_radius) {
-                map[curr_row][curr_col] = EMPTY;
-            }
+// This function moves across the map from the position of the laser by a
+// given vector, and deletes all values inside a given radius from the starting
+// position. This is intended to be used to implement TNT explosions.
+
+void delete_radius_in_direction(
+    int map[SIZE][SIZE], int laser_y, int col,
+    int direction_x, int explosion_radius
+    ) {
+    int curr_col = col;
+
+    // Move in the given direction until outside of the explosion radius
+    // or outside of the bounds of the map.
+    while (distance(col, laser_y, curr_col, laser_y) < explosion_radius
+           && curr_col < SIZE && curr_col >= 0) {
+        map[laser_y][curr_col] = EMPTY;
+        
+        // The y_offset for the current point should be the distance
+        // to the starting point subtracted from the explosion radius - 1
+        int y_offset_downwards = explosion_radius - 1 - abs(curr_col - col);
+        int y_offset_upwards = explosion_radius - 1 - abs(curr_col - col);
+        // Make sure that each y_offset doesn't place us off the map
+        while (laser_y + y_offset_downwards > SIZE - 1) {
+            y_offset_downwards--;
         }
+        while (laser_y - y_offset_upwards < 0) {
+            y_offset_upwards--;
+        }
+
+        // Delete all blocks above the current position, starting from the
+        // current position + y_offset_upwards
+        while (y_offset_upwards >= 1) {
+            map[laser_y - y_offset_upwards][curr_col] = EMPTY;
+            y_offset_upwards--;
+        }
+        // Do the same in the downwards direction
+        while (y_offset_downwards >= 1) {
+            map[laser_y + y_offset_downwards][curr_col] = EMPTY;
+            y_offset_downwards--;
+        }
+        curr_col += direction_x;
     }
 }
 
@@ -173,25 +198,26 @@ void fire_laser(int map[SIZE][SIZE], int laser_y, bool *game_over) {
 
     // Loop over the columns in the row where the laser is
     while (col < SIZE && destroyed_blocks < LASER_MAX) {
-        int curr_block = map[laser_y][col];
         // Change stones to empty and increment destroyed blocks counter
-        if (curr_block == STONE) {
+        if (map[laser_y][col] == STONE) {
             map[laser_y][col] = EMPTY;
             destroyed_blocks++;
         
         // TNT Blocks
-        } else if (TNT_MIN <= curr_block && curr_block <= TNT_MAX) {
-            int explosion_radius = curr_block;
-            
-            explode_blocks(map, laser_y, col, explosion_radius);
+        } else if (TNT_MIN <= map[laser_y][col] && map[laser_y][col] <= TNT_MAX) {
+            int explosion_radius = map[laser_y][col];
 
-            // Laser is used up by TNT so we set it to LASER_MAX
-            destroyed_blocks = LASER_MAX;
+            // First delete blocks in the positive x direction
+            delete_radius_in_direction(map, laser_y, col, 1, explosion_radius);
+            // Then in the negative x direction
+            delete_radius_in_direction(map, laser_y, col, -1, explosion_radius);
+
+            destroyed_blocks++;
         }
         col++;
     }
 
-    //Check if the game is won by looping over all blocks
+    //Check if the game is won
     int row = 0;
     bool is_empty = true;
     while (row < SIZE && is_empty) {
@@ -221,8 +247,8 @@ void shift_everything_left(int map[SIZE][SIZE], int laser_y, bool *game_over) {
     // Check if there are any stones in the leftmost column
     int row = 0;
     while (row < SIZE && !(*game_over)) {
-        // If there is a block in column 0, note that the game is over.
-        if (map[row][0] != EMPTY) {
+        // If there is a stone in column 0, note that the game is over.
+        if (map[row][0] == STONE) {
             *game_over = true;
         }
         row++;
@@ -258,11 +284,9 @@ void rotate_map(int map[SIZE][SIZE], bool *game_over, bool *is_rotated) {
         int direction;
         scanf("%d", &direction);
 
-        // Only continue if direction is clockwise or counterclockwise
+        // Only continue if direction is 1 or 2
         if (direction == CLOCKWISE || direction == COUNTER_CLOCKWISE) {
             int new_map[SIZE][SIZE] = {EMPTY};    
-
-            //TODO split the following into a function called rotate_in_direction
             
             // Loop over the rows of the map starting from the bottom
             // and then change the new_map value based on the map value
@@ -270,19 +294,19 @@ void rotate_map(int map[SIZE][SIZE], bool *game_over, bool *is_rotated) {
                 for (int curr_col = 0; curr_col < SIZE; curr_col++) {
                     // If non-empty, change the value in new_map
                     if (map[curr_row][curr_col] != EMPTY) {
-                        // Convert the current values to the new values.
-                        // This involves switching the rows and columns as well
-                        // as finding the absolute values of the difference of
-                        // the row/column value and SIZE - 1. 
+                        // Convert the curr_row to the col value of new_map.
+                        // If the direction is 1, this means getting the
+                        // absolute value of the row - (SIZE - 1).
+                        // Otherwise, this is just the row value.
                         int new_col;
-                        int new_row;
                         if (direction == CLOCKWISE) {
                             new_col = -(curr_row - (SIZE - 1));
-                            new_row = curr_col;
                         } else {
                             new_col = curr_row;
-                            new_row = -(curr_col - (SIZE - 1));
                         }
+
+                        // Convert the curr_col to the row value of new_map
+                        int new_row = curr_col;
 
                         new_map[new_row][new_col] = map[curr_row][curr_col];
                     }
