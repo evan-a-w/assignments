@@ -3,13 +3,41 @@
 Write a summary of how you made the changes that you did:
 
 [E1:Summary] {{{
+In order to implement the different modes, I first made a new night_map array and then 
+created a pointer to the same type as the map array. This allowed me to easily switch between the two maps
+without having to alter functions, by simply dereferencing this pointer.
 
+I then adapted the main function to scan the absolute value of negative numbers to the night map instead of
+the day map, and checked whether there were initially any blocks in the day map. If not, the game would immediately
+be over. 
+
+I also created several new boolean variables to track the state of the game.
+These include:
+    - inverted, which when true indicates that the map in play is the night map
+    - night_win, which indicates whether the night map is empty and therefore whether that half of the game is won.
+    - day_win, which is the same as night_win but for the day map.
+
+The final point of adjustment was the fire_laser function, responsible for the fire_laser command. This function
+holds the logic of checking whether the game is won, which requires an update in the night realm.
+Essentially, I made it so that if the current map is empty, it sets the respective win boolean (night_win or day_win)
+to true, and outputs "Game Won!" only if both of these variables are true. This allows for accurate reporting of
+victories.
+
+The tests that I wrote were adapted versions of some of the earlier tests (with many blocks). I managed to find out 
+about the "diff" command, which I used to verify whether the tests produced the same output in my program and
+the reference.
+
+The first test was specifically designed to test the shifting functionality of my program, including whether it
+accurately reported losses. Included in this test was a rotate command, which I just used to ensure that rotate
+functionality continued to work with the night mode.
+
+The second test concerned the win functionality as well as TNT, and consisted of a circular section of blocks
+centred with TNT in both the night and day maps.
 }}}
 
 Write two tests to test your implementation of Extension 1 ("Night Realm").
 
 [E1:Test 1] {{{
-
 }}}
 [E1:Test 2] {{{
 
