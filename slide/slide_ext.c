@@ -35,7 +35,8 @@ void print_map(int map[SIZE][SIZE], int laser_y);
 
 // These functions correspond to different commands. Move laser is not included
 // because it is very short.
-void fire_laser(int map[SIZE][SIZE], int laser_y, bool *game_over);
+void fire_laser(int map[SIZE][SIZE], int laser_y, bool *game_over, 
+                bool *inverted, bool *day_win, bool *night_win);
 void shift_everything_left(int map[SIZE][SIZE], int laser_y, bool *game_over);
 void rotate_map(int map[SIZE][SIZE], bool *game_over, bool *is_rotated);
 
@@ -71,6 +72,8 @@ int main (void) {
     bool is_rotated = false;
     bool game_over = true;
     bool inverted = false;
+    bool night_win = false;
+    bool day_win = false; 
 
     printf("Enter blocks:\n");
     // This is a loop that allows each block to be scanned.
@@ -117,7 +120,8 @@ int main (void) {
 
         // Fire Laser command
         } else if (instruction == FIRE_LASER) {
-            fire_laser(*curr_map, laser_y, &game_over);
+            fire_laser(*curr_map, laser_y, &game_over, &inverted,
+                       &day_win, &night_win);
 
         // Shift Everything Left
         } else if (instruction == SHIFT_EVERYTHING_LEFT) {
@@ -200,7 +204,8 @@ void explode_blocks(int map[SIZE][SIZE], int laser_y, int col,
 // Game Won! if the map is empty.
 // This can change the map array and the game_over boolean.
 
-void fire_laser(int map[SIZE][SIZE], int laser_y, bool *game_over) {
+void fire_laser(int map[SIZE][SIZE], int laser_y, bool *game_over, 
+                bool *inverted, bool *day_win, bool *night_win) {
     int col = 0; 
     int destroyed_blocks = 0;
 
@@ -238,7 +243,25 @@ void fire_laser(int map[SIZE][SIZE], int laser_y, bool *game_over) {
         }
         row++;
     }
+    
+    // Now we need to check if the current map is empty (and the other map)
+    // If both are empty, game is over. Otherwise, set the respective
+    // variables and move on.
     if (is_empty) {
+        if (inverted) {
+            *night_win = true;
+            if (*day_win) {
+                *game_over = true;
+            }
+        } else {
+            *day_win = true;
+            if (*night_win) {
+                *game_over = true;
+            }
+        }
+    }
+
+    if (*game_over) {
         print_map(map, laser_y);
         printf("Game Won!\n");
         // Note that the game is over.
