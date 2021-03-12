@@ -84,7 +84,7 @@ int main (void) {
 
     // Read commands until EOF or the game is over
     int instruction;
-    while ( !game_over && (scanf("%d", &instruction) != EOF) ) {
+    while (!game_over && (scanf("%d", &instruction) != EOF)) {
 
         // Move laser command
         if (instruction == MOVE_LASER) {

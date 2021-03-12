@@ -3,57 +3,11 @@
 #include <stdbool.h>
 
 int main(void) {
-    char cmd[200] = "./slide";
-    system(cmd);
-    char *cpy = "16";
-    strcpy(cmd, cpy);
+    int dir = 1;
+    int dir2 = 0;
+    int dir3 = -1;
 
-    char *cpy = "0 3 1";
-    strcpy(cmd, cpy);
-    system(cmd);
-    char *cpy = "1 2 1";
-    strcpy(cmd, cpy);
-    system(cmd);
-    char *cpy = "2 0 1";
-    strcpy(cmd, cpy);
-    system(cmd);
-    char *cpy = "2 1 4";
-    strcpy(cmd, cpy);
-    system(cmd);
-    char *cpy = "3 1 1";
-    strcpy(cmd, cpy);
-    system(cmd);
-    char *cpy = "4 1 1";
-    strcpy(cmd, cpy);
-    system(cmd);
-    char *cpy = "5 1 1";
-    strcpy(cmd, cpy);
-    system(cmd);
-    char *cpy = "6 1 1";
-    strcpy(cmd, cpy);
-    system(cmd);
-    char *cpy = "7 1 1";
-    strcpy(cmd, cpy);
-    system(cmd);
-    char *cpy = "3 2 1";
-    strcpy(cmd, cpy);
-    system(cmd);
-    char *cpy = "4 3 1";
-    strcpy(cmd, cpy);
-    system(cmd);
-    char *cpy = "5 4 1";
-    strcpy(cmd, cpy);
-    system(cmd);
-    char *cpy = "6 5 1";
-    strcpy(cmd, cpy);
-    system(cmd);
-    char *cpy = "7 6 1";
-    strcpy(cmd, cpy);
-    system(cmd);
-    char *cpy = "0 1 1";
-    strcpy(cmd, cpy);
-    system(cmd);
-    char *cpy = "1 1 1";
-    strcpy(cmd, cpy);
-    system(cmd);
+    printf("%d\n", !dir);
+    printf("%d\n", !dir2);
+    printf("%d\n", !dir3);
 }
