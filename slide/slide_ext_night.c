@@ -1,19 +1,10 @@
-<<<<<<< HEAD
-// Slide night extension
-// slide_ext_night.c
-=======
 // Slide Night Extension
 // slide_ext.c
->>>>>>> 342263bd71a8ac1dab0be68e729caf61c29befdd
 //
 // This program was written by Evan Williams (z5368211)
 // on 12/03/2021
 //
-<<<<<<< HEAD
-// This program is the slide game but with a night mode and map.
-=======
-// This is the slide program but with added functionality for the night mode map.
->>>>>>> 342263bd71a8ac1dab0be68e729caf61c29befdd
+// This is the slide game but with added functionality for the night mode map.
 
 #include <stdio.h>
 #include <stdlib.h>
