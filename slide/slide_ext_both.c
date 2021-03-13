@@ -1,10 +1,10 @@
-// Slide mirror extension
-// slide_ext_mirror.c
+// Slide Night Extension
+// slide_ext.c
 //
 // This program was written by Evan Williams (z5368211)
-// on 11/03/2021
+// on 12/03/2021
 //
-// This program is the slide game but with mirrors that reflect the laser.
+// This is the slide game but with added functionality for the night mode map.
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -36,6 +36,8 @@
 #define MIRROR 2
 
 void print_map(int map[SIZE][SIZE], int laser_y);
+void read_blocks(int map[SIZE][SIZE], int night_map[SIZE][SIZE], 
+                 bool *game_over, bool *day_win, bool *night_win);
 
 // These functions correspond to different commands. Move laser is not included
 // because it is very short.
@@ -60,38 +62,29 @@ void delete_in_direction(int map[SIZE][SIZE], int curr_row, int curr_col,
 
 int main (void) {
     // This line creates our 2D array called "map" and sets all
-    // of the blocks in the map to EMPTY.
+    // of the blocks in the map to EMPTY. The night mode map is also created.
     int map[SIZE][SIZE] = {EMPTY};
+    int night_map[SIZE][SIZE] = {EMPTY};
+
+    // We will use a pointer which will reference either the night_map or
+    // the day map, starting with the day map.
+    int (*curr_map)[SIZE][SIZE] = &map;
 
     // This line creates our laser_y variable. The laser starts in the
     // middle of the map, at position 7.
     int laser_y = SIZE / 2;
 
-    int blocks;
-    printf("How many blocks? ");
-    scanf("%d", &blocks);
-    
     // Create variables to track the state of the game.
     bool is_rotated = false;
-    bool game_over = false;
+    bool game_over = true;
+    bool inverted = false;
+    bool night_win = true;
+    bool day_win = true; 
+    
+    read_blocks(map, night_map, &game_over, &day_win, &night_win);
+    print_map(*curr_map, laser_y);
 
-    printf("Enter blocks:\n");
-    // This is a loop that allows each block to be scanned.
-    for (int i = 0; i < blocks; i++) {
-        int row, col, digit;
-
-        scanf("%d %d %d", &row, &col, &digit);
-
-        // Only change values if the row and column numbers are valid.
-        if (indices_are_valid(row, col)) {
-            map[row][col] = digit;
-        }
-    }
-
-
-    print_map(map, laser_y);
-
-    // Read commands until EOF or the game is over
+    // Read commands until an error in input or the game is over
     int instruction;
     while (!game_over && (scanf("%d", &instruction) == SUCCESS)) {
 
@@ -109,25 +102,43 @@ int main (void) {
 
         // Fire Laser command
         } else if (instruction == FIRE_LASER) {
-            fire_laser(map, laser_y, &game_over);
+            fire_laser(*curr_map, laser_y, &game_over, &inverted,
+                       &day_win, &night_win);
 
         // Shift Everything Left
         } else if (instruction == SHIFT_EVERYTHING_LEFT) {
-            shift_everything_left(map, laser_y, &game_over);
+            // Flip the inverted boolean
+            inverted = !inverted;
             
+            // Reference the correct map with curr_map.
+            // Don't switch if we are on day and the night map is already empty.
+            // If the day map is empty and we are on the night map,
+            // we still switch (reference does so).
+            if (inverted && !night_win) {
+                curr_map = &night_map;
+            } else if (!inverted){
+                curr_map = &map;
+
+            // Otherwise, we aren't switching, so reflip the inverted boolean.
+            } else {
+                inverted = !inverted;
+            }
+
+            // Now, shift the current map
+            shift_everything_left(*curr_map, laser_y, &game_over);
+
         // Rotate the map
         } else if (instruction == ROTATE_MAP) {
-            rotate_map(map, &game_over, &is_rotated);
+            rotate_map(*curr_map, &game_over, &is_rotated);
         }
 
         // If the game is not finished, we want to print the map.
         // If the game is finished, the map is printed in the instruction's 
         // function, so it should not be printed again.
         if (!game_over) {
-            print_map(map, laser_y);
+            print_map(*curr_map, laser_y);
         }
     }
-
     return 0;
 }
 
@@ -151,20 +162,54 @@ void print_map(int map[SIZE][SIZE], int laser_y) {
     }
 }
 
-// This function checks whether a row and column index are inside the map
+// This function gets user input and sets the map values for each given block.
+// This modifies both map arrays as well as the game state bools.
+void read_blocks(int map[SIZE][SIZE], int night_map[SIZE][SIZE], 
+                 bool *game_over, bool *day_win, bool *night_win) {
+    
+    // Read the number of blocks into blocks
+    int blocks;
+    printf("How many blocks? ");
+    scanf("%d", &blocks);
 
+    printf("Enter blocks:\n");
+    // This is a loop that allows each block to be scanned.
+    for (int i = 0; i < blocks; i++) {
+        int row, col, digit;
+
+        scanf("%d %d %d", &row, &col, &digit);
+
+        // Only change values if the row and column numbers are valid.
+        if (indices_are_valid(row, col)) {
+            
+            // If the digit is negative, add its absolute value to the
+            // night mode map.
+            if (digit <= 0) {
+                night_map[row][col] = abs(digit);                
+                *night_win = false;
+            // Otherwise, add it to the normal map and note that there
+            // is a normal block so the game can begin.
+            } else {
+                map[row][col] = digit;
+                *game_over = false;
+                *day_win = false;
+            }
+        }
+    }
+}
+
+// This function checks whether a row and column index are inside the map
 bool indices_are_valid(int row, int col) {
     return (0 <= row && row < SIZE && 0 <= col && col < SIZE);
 }
 
 // This function returns the distance between two points.
-
 double distance(int x1, int y1, int x2, int y2) {
     return sqrt(1.0 * ((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1)));
 }
+
 // This function loops over the map and deletes any blocks that are within a
 // given explosion radius (calculated by the distance function)
-
 void explode_blocks(int map[SIZE][SIZE], int laser_y, int col,
                     int explosion_radius) {
     for (int curr_row = 0; curr_row < SIZE; curr_row++) {
@@ -179,8 +224,8 @@ void explode_blocks(int map[SIZE][SIZE], int laser_y, int col,
 // This function fires the laser and removes any objects in its path, and prints
 // Game Won! if the map is empty.
 // This can change the map array and the game_over boolean.
-
-void fire_laser(int map[SIZE][SIZE], int laser_y, bool *game_over) {
+void fire_laser(int map[SIZE][SIZE], int laser_y, bool *game_over, 
+                bool *inverted, bool *day_win, bool *night_win) {
     int col = 0; 
     int laser_charge = LASER_MAX;
 
@@ -200,7 +245,7 @@ void fire_laser(int map[SIZE][SIZE], int laser_y, bool *game_over) {
 
             // Laser is used up by TNT so we set laser_charge to 0
             laser_charge = 0;
-
+            
         // Mirror blocks
         } else if (curr_block == MIRROR) {
             // Create variables to indicate the positive direction of the
@@ -236,7 +281,25 @@ void fire_laser(int map[SIZE][SIZE], int laser_y, bool *game_over) {
         }
         row++;
     }
+    
+    // Now we need to check if the current map is empty (and the other map)
+    // If both are empty, game is over. Otherwise, set the respective
+    // variables and move on.
     if (is_empty) {
+        if (*inverted) {
+            *night_win = true;
+            if (*day_win) {
+                *game_over = true;
+            }
+        } else {
+            *day_win = true;
+            if (*night_win) {
+                *game_over = true;
+            }
+        }
+    }
+
+    if (*game_over) {
         print_map(map, laser_y);
         printf("Game Won!\n");
         // Note that the game is over.
@@ -247,7 +310,6 @@ void fire_laser(int map[SIZE][SIZE], int laser_y, bool *game_over) {
 // This function shifts all objects in the map left or prints
 // game over if objects are in the leftmost column.
 // This can change the map array and the game_over boolean.
-
 void shift_everything_left(int map[SIZE][SIZE], int laser_y, bool *game_over) {
     // Check if there are any stones in the leftmost column
     int row = 0;
@@ -272,7 +334,6 @@ void shift_everything_left(int map[SIZE][SIZE], int laser_y, bool *game_over) {
 // Rotates the map clockwise, counter clockwise, or not at all depending
 // on the argument and whether a rotate has been used.
 // This can change the map array, game_over boolean and is_rotated boolean.
-
 void rotate_map(int map[SIZE][SIZE], bool *game_over, bool *is_rotated) {
     if (!(*is_rotated)) {
         // Note that the rotate has been used (even if it is not valid)
@@ -302,7 +363,6 @@ void rotate_map(int map[SIZE][SIZE], bool *game_over, bool *is_rotated) {
 
 // This function implements the logic to rotate the map either clockwise or
 // counterclockwise. This changes the map array.
-
 void rotate_in_direction(int map[SIZE][SIZE], int direction) {
 
     int new_map[SIZE][SIZE] = {EMPTY};    
@@ -344,7 +404,6 @@ void shift_left(int map[SIZE][SIZE]) {
 }
 
 // This function returns the column value after rotation
-
 int rotated_column(int map[SIZE][SIZE], int direction, int curr_row) {
     // To do this counterclockwise, we simply take the current row value.
     // Otherwise, we must subtract the SIZE by the current row plus one.
@@ -356,7 +415,6 @@ int rotated_column(int map[SIZE][SIZE], int direction, int curr_row) {
 }
 
 // This function returns the row value after rotation
-
 int rotated_row(int map[SIZE][SIZE], int direction, int curr_col) {
     // This functions similarly to the rotated_column function, but we switch
     // columns for rows and flip the methods used for 
@@ -370,7 +428,6 @@ int rotated_row(int map[SIZE][SIZE], int direction, int curr_col) {
 
 // This function implements the laser mirror functionality, creating a laser
 // that destroyed blocks in two directions. This changes the map array.
-
 void reflect_laser(int map[SIZE][SIZE], int laser_y, int laser_x,
                    int direction_x, int direction_y, int laser_charge) {
 
@@ -390,7 +447,6 @@ void reflect_laser(int map[SIZE][SIZE], int laser_y, int laser_x,
 
 // This function deletes blocks in a direction, reflecting the laser when it 
 // strikes a mirror. This changes the map array.
-
 void delete_in_direction(int map[SIZE][SIZE], int curr_row, int curr_col,
                          int direction_x, int direction_y, int laser_charge) {
 
