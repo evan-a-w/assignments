@@ -11,8 +11,6 @@
 #include <math.h>
 #include <stdbool.h>
 
-// TODO make it so shift map doesnt flip if the other side is empty
-
 #define SIZE 15
 #define EMPTY 0
 #define STONE 1
@@ -134,10 +132,11 @@ int main (void) {
             inverted = !inverted;
             
             // Reference the correct map with curr_map.
-            // Don't switch if the other map is already empty.
+            // Don't switch if the night map is already empty.
+            // If the day map is empty, we still switch (reference does so).
             if (inverted && !night_win) {
                 curr_map = &night_map;
-            } else if (!inverted && !day_win){
+            } else if (!inverted){
                 curr_map = &map;
 
             // Otherwise, we aren't switching, so reflip inverted boolean.
