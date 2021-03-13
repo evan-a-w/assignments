@@ -15,6 +15,8 @@
 #define EMPTY 0
 #define STONE 1
 
+#define SUCCESS 1
+
 #define LASER_MAX 4
 
 #define MOVE_LASER 1
@@ -90,7 +92,7 @@ int main (void) {
 
     // Read commands until EOF or the game is over
     int instruction;
-    while (!game_over && (scanf("%d", &instruction) != EOF)) {
+    while (!game_over && (scanf("%d", &instruction) == SUCCESS)) {
 
         // Move laser command
         if (instruction == MOVE_LASER) {
