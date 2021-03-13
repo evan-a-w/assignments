@@ -11,6 +11,8 @@
 #include <math.h>
 #include <stdbool.h>
 
+// TODO make it so shift map doesnt flip if the other side is empty
+
 #define SIZE 15
 #define EMPTY 0
 #define STONE 1
@@ -72,8 +74,8 @@ int main (void) {
     bool is_rotated = false;
     bool game_over = true;
     bool inverted = false;
-    bool night_win = false;
-    bool day_win = false; 
+    bool night_win = true;
+    bool day_win = true; 
 
     printf("Enter blocks:\n");
     // This is a loop that allows each block to be scanned.
@@ -89,12 +91,13 @@ int main (void) {
             // night mode map.
             if (digit <= 0) {
                 night_map[row][col] = abs(digit);                
-            
+                night_win = false;
             // Otherwise, add it to the normal map and note that there
             // is a normal block so the game can begin.
             } else {
                 map[row][col] = digit;
                 game_over = false;
+                day_win = false;
             }
         }
     }
@@ -128,11 +131,16 @@ int main (void) {
             // Flip the inverted boolean
             inverted = !inverted;
             
-            // Reference the correct map with curr_map
-            if (inverted) {
+            // Reference the correct map with curr_map.
+            // Don't switch if the other map is already empty.
+            if (inverted && !night_win) {
                 curr_map = &night_map;
-            } else {
+            } else if (!inverted && !day_win){
                 curr_map = &map;
+
+            // Otherwise, we aren't switching, so reflip inverted boolean.
+            } else {
+                inverted = !inverted;
             }
 
             // Now, shift the current map

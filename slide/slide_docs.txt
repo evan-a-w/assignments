@@ -116,7 +116,19 @@ Write two tests to test your implementation of Extension 1 ("Night Realm").
 Write a summary of how you made the changes that you did:
 
 [E2:Summary] {{{
+In order to add mirror block functionality, I added a new conditional branch to
+the fire laser command, which checked whether the current block has value 2.
 
+In this branch, I delegated the logic to a function called reflect_laser.
+This function is given the current laser position, the laser charge and
+the direction that the laser should go in x and y. This is initially 0 for x
+and 1 for y, because when the laser is first reflected, it moves vertically.
+
+In the reflect_laser function, the laser charge is halved, and then another
+function, delete_in_direction, is called twice. This function implements
+the logic to loop over the blocks in the lasers path, decrementing the laser
+charge and removing blocks. This function also recursively called reflect_laser
+if it encounters a mirror.
 }}}
 
 Write two tests to test your implementation of Extension 2 ("Mirror Blocks").
