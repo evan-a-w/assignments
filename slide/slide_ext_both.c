@@ -59,6 +59,7 @@ void reflect_laser(int map[SIZE][SIZE], int laser_y, int laser_x,
                    int direction_x, int direction_y, int laser_charge);
 void delete_in_direction(int map[SIZE][SIZE], int curr_row, int curr_col,
                          int direction_x, int direction_y, int laser_charge);
+bool block_is_valid(int block);
 
 int main (void) {
     // This line creates our 2D array called "map" and sets all
@@ -180,7 +181,7 @@ void read_blocks(int map[SIZE][SIZE], int night_map[SIZE][SIZE],
         scanf("%d %d %d", &row, &col, &digit);
 
         // Only change values if the row and column numbers are valid.
-        if (indices_are_valid(row, col)) {
+        if (indices_are_valid(row, col) && block_is_valid(digit)) {
             
             // If the digit is negative, add its absolute value to the
             // night mode map.
@@ -201,6 +202,12 @@ void read_blocks(int map[SIZE][SIZE], int night_map[SIZE][SIZE],
 // This function checks whether a row and column index are inside the map
 bool indices_are_valid(int row, int col) {
     return (0 <= row && row < SIZE && 0 <= col && col < SIZE);
+}
+
+// This function returns whether a given block is valid.
+bool block_is_valid(int block) {
+    block = abs(block);
+    return (block == 1 || (4 <= block && block <= 8) || block == 2);
 }
 
 // This function returns the distance between two points.

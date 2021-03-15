@@ -50,6 +50,7 @@ bool indices_are_valid(int row, int col);
 void shift_left(int map[SIZE][SIZE]);
 int rotated_row(int map[SIZE][SIZE], int direction, int curr_col);
 int rotated_column(int map[SIZE][SIZE], int direction, int curr_row);
+bool block_is_valid(int block);
 
 int main (void) {
     // This line creates our 2D array called "map" and sets all
@@ -75,8 +76,9 @@ int main (void) {
 
         scanf("%d %d %d", &row, &col, &digit);
 
-        // Only change values if the row and column numbers are valid.
-        if (indices_are_valid(row, col)) {
+        // Only change values if the row and column numbers are valid and the
+        // block is valid.
+        if (indices_are_valid(row, col) && block_is_valid(digit)) {
             map[row][col] = digit;
         }
     }
@@ -145,13 +147,16 @@ void print_map(int map[SIZE][SIZE], int laser_y) {
 }
 
 // This function checks whether a row and column index are inside the map
-
 bool indices_are_valid(int row, int col) {
     return (0 <= row && row < SIZE && 0 <= col && col < SIZE);
 }
 
-// This function returns the distance between two points.
+// This function returns whether a given block is valid.
+bool block_is_valid(int block) {
+    return (block == 1 || (4 <= block && block <= 8));
+}
 
+// This function returns the distance between two points.
 double distance(int x1, int y1, int x2, int y2) {
     return sqrt(1.0 * ((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1)));
 }
