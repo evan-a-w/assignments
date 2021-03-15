@@ -83,7 +83,16 @@ int main (void) {
     bool day_win = true; 
     
     read_blocks(map, night_map, &game_over, &day_win, &night_win);
-    print_map(*curr_map, laser_y);
+    
+    // If map is not empty (indicated by the game_over bool), print the map. 
+    // Otherwise, print that the map was empty.
+    if (!game_over) {
+        print_map(*curr_map, laser_y);
+    } else {
+        printf("The map was initially completely empty.\n");
+        printf("This case will never be tested.");
+        printf(" You do not need to handle this case.\n");
+    }
 
     // Read commands until an error in input or the game is over
     int instruction;

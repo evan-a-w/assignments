@@ -3,8 +3,8 @@ import subprocess
 import random as rd
 
 def test_functions(cmd_stream):
-    my_path = ["./slide_ext"]
-    ref = ['1511', 'slide_ext_both']
+    my_path = ["./slide"]
+    ref = ['1511', 'slide_reference']
     slide_path = "/import/adams/5/z5368211/assignments/slide"
 
     command_list = " ".join([str(i) for i in cmd_stream])
@@ -25,19 +25,11 @@ def test_functions(cmd_stream):
 
 def random_block():
     rand_num = rd.random()
-    num = 0
     if rand_num < 0.75:
-        num = 1
-    elif rand_num < 0.875:
-        num = 2
+        return 1
     else:
-        num =  rd.randint(4,9)
+        return rd.randint(4,9)
 
-    rand_num = rd.random()
-    if rand_num < 0.5:
-        return num
-    else:
-        return -num
 
 def random_command():
     rand_num = rd.random()
@@ -66,6 +58,12 @@ def random_command():
         else:
             return [4,rd.randint(-10,10)]
 
+def valid(y, x):
+    if 0 <= y and y <= 14:
+        if 0 <= x and x <= 14:
+            return True
+    return False
+
 def cmd_gen():
     block_count = rd.randint(1,200)
     cmd_list = [block_count]
@@ -75,6 +73,24 @@ def cmd_gen():
         cmd_list.append(y)
         cmd_list.append(x)
         cmd_list.append(random_block())
+
+    no_pos = True
+    no_valid = True
+    i = 3
+    while i < len(cmd_list):
+        if cmd_list[i] > 0:
+            no_pos = False
+        if valid(cmd_list[i-2], cmd_list[i-1]):
+            no_valid = False
+        if not (no_pos or no_valid):
+            break
+        i += 3
+
+    if no_pos:
+        cmd_list[3] = -cmd_list[3]
+    if no_valid:
+        cmd_list[1] = 1
+        cmd_list[2] = 1
         
     command_count = rd.randint(1,50)
     for _ in range(command_count):
