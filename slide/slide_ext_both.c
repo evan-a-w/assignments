@@ -342,29 +342,19 @@ void shift_everything_left(int map[SIZE][SIZE], int laser_y, bool *game_over) {
 // on the argument and whether a rotate has been used.
 // This can change the map array, game_over boolean and is_rotated boolean.
 void rotate_map(int map[SIZE][SIZE], bool *game_over, bool *is_rotated) {
+    // Scan the next number (the direction) into a variable
+    int direction;
+    scanf("%d", &direction);
+
     if (!(*is_rotated)) {
         // Note that the rotate has been used (even if it is not valid)
         *is_rotated = true;
-
-        // Scan the next number (the direction) into a variable
-        int direction;
-        scanf("%d", &direction);
 
         // Only continue if direction is clockwise or counterclockwise
         if (direction == CLOCKWISE || direction == COUNTER_CLOCKWISE) {
             // Call a function to complete the logic to rotate the map
             rotate_in_direction(map, direction); 
         } 
-        
-    // Need to clear the scanf buffer if the rotate command is called but
-    // rotate has been used (otherwise causes problems in the next loop).
-    } else {
-        int c = 0;
-        // Keep getting integers until a newline. This clears the buffer.
-        // TODO check style guide about this.
-        while (c != '\n') {
-            c = getchar();
-        }
     }
 }
 
