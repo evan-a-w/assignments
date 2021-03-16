@@ -33,7 +33,7 @@ def random_block():
     else:
         num =  rd.randint(4,9)
 
-    rand_num = rd.random()
+    return num
 
 def random_command():
     rand_num = rd.random()
