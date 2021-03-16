@@ -60,6 +60,7 @@ void reflect_laser(int map[SIZE][SIZE], int laser_y, int laser_x,
 void delete_in_direction(int map[SIZE][SIZE], int curr_row, int curr_col,
                          int direction_x, int direction_y, int laser_charge);
 bool block_is_valid(int block);
+bool check_empty(int curr_map[SIZE][SIZE]); 
 
 int main (void) {
     // This line creates our 2D array called "map" and sets all
@@ -83,6 +84,10 @@ int main (void) {
     bool day_win = true; 
     
     read_blocks(map, night_map, &game_over, &day_win, &night_win);
+
+    // Check whether the night map is now empty because all values that were
+    // added were later set to EMPTY
+    night_win = check_empty(night_map);
     
     // If map is not empty (indicated by the game_over bool), print the map. 
     // Otherwise, print that the map was empty.
@@ -192,7 +197,7 @@ void read_blocks(int map[SIZE][SIZE], int night_map[SIZE][SIZE],
         // Only change values if the row and column numbers are valid.
         if (indices_are_valid(row, col) && block_is_valid(digit)) {
             
-            // If the digit is negative, add its absolute value to the
+            // If the digit is negative or 0, add its absolute value to the
             // night mode map.
             if (digit <= 0) {
                 night_map[row][col] = abs(digit);                
@@ -217,7 +222,7 @@ bool indices_are_valid(int row, int col) {
 bool block_is_valid(int block) {
     block = abs(block);
     return (block == STONE || (TNT_MIN <= block && block <= TNT_MAX)
-            || block == MIRROR);
+            || block == MIRROR || block == EMPTY);
 }
 
 // This function returns the distance between two points.
@@ -236,6 +241,25 @@ void explode_blocks(int map[SIZE][SIZE], int laser_y, int col,
             }
         }
     }
+}
+
+// This function checks whether the current map is empty and returns a boolean.
+bool check_empty(int curr_map[SIZE][SIZE]) {
+    int row = 0;
+    bool is_empty = true;
+    while (row < SIZE && is_empty) {
+        int col = 0;
+        while (col < SIZE && is_empty) {
+            // If index of map is not empty, the game is not won.
+            if (curr_map[row][col] != EMPTY) {
+                is_empty = false;
+            } 
+            col++;
+        }
+        row++;
+    }
+    
+    return is_empty;
 }
 
 // This function fires the laser and removes any objects in its path, and prints
@@ -285,19 +309,7 @@ void fire_laser(int map[SIZE][SIZE], int laser_y, bool *game_over,
     }
 
     //Check if the game is won by looping over all blocks
-    int row = 0;
-    bool is_empty = true;
-    while (row < SIZE && is_empty) {
-        col = 0;
-        while (col < SIZE && is_empty) {
-            // If index of map is not empty, the game is not won.
-            if (map[row][col] != EMPTY) {
-                is_empty = false;
-            } 
-            col++;
-        }
-        row++;
-    }
+    bool is_empty = check_empty(map);
     
     // Now we need to check if the current map is empty (and the other map)
     // If both are empty, game is over. Otherwise, set the respective
