@@ -4,7 +4,7 @@ import random as rd
 
 def test_functions(cmd_stream):
     my_path = ["./slide_ext"]
-    ref = ['1511', 'slide_ext_both']
+    ref = ['1511', 'slide_ext_mirror']
     slide_path = "/import/adams/5/z5368211/assignments/slide"
 
     command_list = " ".join([str(i) for i in cmd_stream])
@@ -34,10 +34,6 @@ def random_block():
         num =  rd.randint(4,9)
 
     rand_num = rd.random()
-    if rand_num < 0.5:
-        return num
-    else:
-        return -num
 
 def random_command():
     rand_num = rd.random()
