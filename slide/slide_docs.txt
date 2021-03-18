@@ -127,15 +127,32 @@ and 1 for y, because when the laser is first reflected, it moves vertically.
 In the reflect_laser function, the laser charge is halved, and then another
 function, delete_in_direction, is called twice. This function implements
 the logic to loop over the blocks in the lasers path, decrementing the laser
-charge and removing blocks. This function also recursively called reflect_laser
+charge and removing blocks. This function also recursively calls reflect_laser
 if it encounters a mirror.
+
+The first test is designed to test whether mirror blocks function as required
+when reflected multiple times and destroying blocks (including TNT blocks).
+
+The second test is supposed to test whether the win condition is properly
+checked after mirror lasers destroy blocks.
 }}}
 
 Write two tests to test your implementation of Extension 2 ("Mirror Blocks").
 
 [E2:Test 1] {{{
+7
+
+7 7 2 5 7 4 9 7 2 6 7 1 4 7 2 9 8 1
+4 6 1
+
+2
 
 }}}
 [E2:Test 2] {{{
+4
+
+7 7 2 5 7 2 5 6 1 5 8 1
+
+2
 
 }}}
