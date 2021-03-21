@@ -2,7 +2,7 @@
 // slide.c
 //
 // This program was written by Evan Williams (z5368211)
-// from 11/03/2021 - 19/03/2021
+// from 11/03/2021 - 21/03/2021
 //
 // Stage 3
 
@@ -33,6 +33,8 @@
 #define TNT_MIN 4
 #define TNT_MAX 9
 
+// These functions are used for the fundamental operations related to the map
+// and game.
 void print_map(int map[SIZE][SIZE], int laser_y);
 void read_blocks(int map[SIZE][SIZE]);
 void instruction_loop(int map[SIZE][SIZE], int laser_y, 
@@ -178,9 +180,9 @@ bool block_is_valid(int block) {
 double distance(int x1, int y1, int x2, int y2) {
     return sqrt(1.0 * ((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1)));
 }
+
 // This function loops over the map and deletes any blocks that are within a
 // given explosion radius (calculated by the distance function)
-
 void explode_blocks(int map[SIZE][SIZE], int laser_y, int col,
                     int explosion_radius) {
     for (int curr_row = 0; curr_row < SIZE; curr_row++) {
@@ -195,7 +197,6 @@ void explode_blocks(int map[SIZE][SIZE], int laser_y, int col,
 // This function fires the laser and removes any objects in its path, and prints
 // Game Won! if the map is empty.
 // This can change the map array and the game_over boolean.
-
 void fire_laser(int map[SIZE][SIZE], int laser_y, bool *game_over) {
     int col = 0; 
     int destroyed_blocks = 0;
@@ -231,6 +232,7 @@ void fire_laser(int map[SIZE][SIZE], int laser_y, bool *game_over) {
     }
 }
 
+// This function checks whether the map is empty and returns a bool.
 bool map_is_empty(int map[SIZE][SIZE]) {
     //Check if the game is won by looping over all blocks
     int row = 0;
@@ -252,7 +254,6 @@ bool map_is_empty(int map[SIZE][SIZE]) {
 // This function shifts all objects in the map left or prints
 // game over if objects are in the leftmost column.
 // This can change the map array and the game_over boolean.
-
 void shift_everything_left(int map[SIZE][SIZE], int laser_y, bool *game_over) {
     // Check if there are any stones in the leftmost column
     int row = 0;
@@ -277,7 +278,6 @@ void shift_everything_left(int map[SIZE][SIZE], int laser_y, bool *game_over) {
 // Rotates the map clockwise, counter clockwise, or not at all depending
 // on the argument and whether a rotate has been used.
 // This can change the map array, game_over boolean and is_rotated boolean.
-
 void rotate_map(int map[SIZE][SIZE], bool *game_over, bool *is_rotated) {
     // Scan the next number (the direction) into a variable
     int direction;
@@ -297,7 +297,6 @@ void rotate_map(int map[SIZE][SIZE], bool *game_over, bool *is_rotated) {
 
 // This function implements the logic to rotate the map either clockwise or
 // counterclockwise. This changes the map array.
-
 void rotate_in_direction(int map[SIZE][SIZE], int direction) {
 
     int new_map[SIZE][SIZE] = {EMPTY};    
@@ -327,6 +326,8 @@ void rotate_in_direction(int map[SIZE][SIZE], int direction) {
     }
 }
 
+// This function moves every column one place left in the map array, discarding
+// the first column.
 void shift_left(int map[SIZE][SIZE]) {
     for (int row = 0; row < SIZE; row++) {
         for (int col = 1; col < SIZE; col++) {
@@ -339,7 +340,6 @@ void shift_left(int map[SIZE][SIZE]) {
 }
 
 // This function returns the column value after rotation
-
 int rotated_column(int map[SIZE][SIZE], int direction, int curr_row) {
     // To do this counterclockwise, we simply take the current row value.
     // Otherwise, we must subtract the SIZE by the current row plus one.
@@ -351,7 +351,6 @@ int rotated_column(int map[SIZE][SIZE], int direction, int curr_row) {
 }
 
 // This function returns the row value after rotation
-
 int rotated_row(int map[SIZE][SIZE], int direction, int curr_col) {
     // This functions similarly to the rotated_column function, but we switch
     // columns for rows and flip the methods used for 
