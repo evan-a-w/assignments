@@ -2,7 +2,7 @@
 // slide_ext.c
 //
 // This program was written by Evan Williams (z5368211)
-// on 12/03/2021
+// From 12/03/2021 - 19/03/2021
 //
 // This is the slide game but with night mode and mirrors.
 

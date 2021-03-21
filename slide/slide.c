@@ -2,7 +2,7 @@
 // slide.c
 //
 // This program was written by Evan Williams (z5368211)
-// on 11/03/2021
+// from 11/03/2021 - 19/03/2021
 //
 // Stage 3
 
@@ -34,6 +34,9 @@
 #define TNT_MAX 9
 
 void print_map(int map[SIZE][SIZE], int laser_y);
+void read_blocks(int map[SIZE][SIZE]);
+void instruction_loop(int map[SIZE][SIZE], int laser_y, 
+                      bool *game_over, bool *is_rotated);
 
 // These functions correspond to different commands. Move laser is not included
 // because it is very short.
@@ -51,6 +54,7 @@ void shift_left(int map[SIZE][SIZE]);
 int rotated_row(int map[SIZE][SIZE], int direction, int curr_col);
 int rotated_column(int map[SIZE][SIZE], int direction, int curr_row);
 bool block_is_valid(int block);
+bool map_is_empty(int map[SIZE][SIZE]);
 
 int main (void) {
     // This line creates our 2D array called "map" and sets all
@@ -60,68 +64,16 @@ int main (void) {
     // This line creates our laser_y variable. The laser starts in the
     // middle of the map, at position 7.
     int laser_y = SIZE / 2;
-
-    int blocks;
-    printf("How many blocks? ");
-    scanf("%d", &blocks);
     
     // Create variables to track the state of the game.
     bool is_rotated = false;
     bool game_over = false;
 
-    printf("Enter blocks:\n");
-    // This is a loop that allows each block to be scanned.
-    for (int i = 0; i < blocks; i++) {
-        int row, col, digit;
-
-        scanf("%d %d %d", &row, &col, &digit);
-
-        // Only change values if the row and column numbers are valid and the
-        // block is valid.
-        if (indices_are_valid(row, col) && block_is_valid(digit)) {
-            map[row][col] = digit;
-        }
-    }
-
-
+    // Read and print the map
+    read_blocks(map);
     print_map(map, laser_y);
 
-    // Read commands until an error or the game is over
-    int instruction;
-    while (!game_over && (scanf("%d", &instruction) == SUCCESS)) {
-
-        // Move laser command
-        if (instruction == MOVE_LASER) {
-            int shift;
-            scanf("%d", &shift); 
-            
-            // Check that shift is valid and the laser would not move off map
-            if (shift == DOWNWARDS && laser_y < SIZE - 1) {
-                laser_y += shift; 
-            } else if (shift == UPWARDS && laser_y > 0) {
-                laser_y += shift;
-            }
-
-        // Fire Laser command
-        } else if (instruction == FIRE_LASER) {
-            fire_laser(map, laser_y, &game_over);
-
-        // Shift Everything Left
-        } else if (instruction == SHIFT_EVERYTHING_LEFT) {
-            shift_everything_left(map, laser_y, &game_over);
-            
-        // Rotate the map
-        } else if (instruction == ROTATE_MAP) {
-            rotate_map(map, &game_over, &is_rotated);
-        }
-
-        // If the game is not finished, we want to print the map.
-        // If the game is finished, the map is printed in the instruction's 
-        // function, so it should not be printed again.
-        if (!game_over) {
-            print_map(map, laser_y);
-        }
-    }
+    instruction_loop(map, laser_y, &game_over, &is_rotated); 
 
     return 0;
 }
@@ -144,6 +96,72 @@ void print_map(int map[SIZE][SIZE], int laser_y) {
         printf("\n");
         i++;
     }
+}
+
+// This function gets user input and sets the map values for each given block.
+// This modifies both map arrays as well as the game state bools.
+void read_blocks(int map[SIZE][SIZE]) {
+    int blocks;
+    printf("How many blocks? ");
+    scanf("%d", &blocks);
+
+    printf("Enter blocks:\n");
+
+    // This is a loop that allows each block to be scanned.
+    for (int i = 0; i < blocks; i++) {
+        int row, col, digit;
+
+        scanf("%d %d %d", &row, &col, &digit);
+
+        // Only change values if the row and column numbers are valid and the
+        // block is valid.
+        if (indices_are_valid(row, col) && block_is_valid(digit)) {
+            map[row][col] = digit;
+        }
+    }
+}
+
+// This function reads in instructions and calls their respective functions
+// before printing the map. This modifies the map array and the game state bools
+void instruction_loop(int map[SIZE][SIZE], int laser_y, 
+                      bool *game_over, bool *is_rotated) {
+    // Read commands until an error or the game is over
+    int instruction;
+    while (!(*game_over) && (scanf("%d", &instruction) == SUCCESS)) {
+
+        // Move laser command
+        if (instruction == MOVE_LASER) {
+            int shift;
+            scanf("%d", &shift); 
+            
+            // Check that shift is valid and the laser would not move off map
+            if (shift == DOWNWARDS && laser_y < SIZE - 1) {
+                laser_y += shift; 
+            } else if (shift == UPWARDS && laser_y > 0) {
+                laser_y += shift;
+            }
+
+        // Fire Laser command
+        } else if (instruction == FIRE_LASER) {
+            fire_laser(map, laser_y, game_over);
+
+        // Shift Everything Left
+        } else if (instruction == SHIFT_EVERYTHING_LEFT) {
+            shift_everything_left(map, laser_y, game_over);
+            
+        // Rotate the map
+        } else if (instruction == ROTATE_MAP) {
+            rotate_map(map, game_over, is_rotated);
+        }
+
+        // If the game is not finished, we want to print the map.
+        // If the game is finished, the map is printed in the instruction's 
+        // function, so it should not be printed again.
+        if (!(*game_over)) {
+            print_map(map, laser_y);
+        }
+    }
+
 }
 
 // This function checks whether a row and column index are inside the map
@@ -202,11 +220,23 @@ void fire_laser(int map[SIZE][SIZE], int laser_y, bool *game_over) {
         col++;
     }
 
+    bool is_empty = map_is_empty(map);
+
+    // If map is empty, game is won so we print the map and "Game Won!".
+    if (is_empty) {
+        print_map(map, laser_y);
+        printf("Game Won!\n");
+        // Note that the game is over.
+        *game_over = true;
+    }
+}
+
+bool map_is_empty(int map[SIZE][SIZE]) {
     //Check if the game is won by looping over all blocks
     int row = 0;
     bool is_empty = true;
     while (row < SIZE && is_empty) {
-        col = 0;
+        int col = 0;
         while (col < SIZE && is_empty) {
             // If index of map is not empty, the game is not won.
             if (map[row][col] != EMPTY) {
@@ -216,12 +246,7 @@ void fire_laser(int map[SIZE][SIZE], int laser_y, bool *game_over) {
         }
         row++;
     }
-    if (is_empty) {
-        print_map(map, laser_y);
-        printf("Game Won!\n");
-        // Note that the game is over.
-        *game_over = true;
-    }
+    return is_empty;
 }
 
 // This function shifts all objects in the map left or prints
