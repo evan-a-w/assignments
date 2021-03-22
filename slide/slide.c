@@ -129,7 +129,7 @@ void instruction_loop(int map[SIZE][SIZE], int laser_y,
                       bool *game_over, bool *is_rotated) {
     // Read commands until an error or the game is over
     int instruction;
-    while (!(*game_over) && (scanf("%d", &instruction) == SUCCESS)) {
+    while (*game_over == false && (scanf("%d", &instruction) == SUCCESS)) {
 
         // Move laser command
         if (instruction == MOVE_LASER) {
@@ -159,7 +159,7 @@ void instruction_loop(int map[SIZE][SIZE], int laser_y,
         // If the game is not finished, we want to print the map.
         // If the game is finished, the map is printed in the instruction's 
         // function, so it should not be printed again.
-        if (!(*game_over)) {
+        if (*game_over == false) {
             print_map(map, laser_y);
         }
     }
@@ -257,7 +257,7 @@ bool map_is_empty(int map[SIZE][SIZE]) {
 void shift_everything_left(int map[SIZE][SIZE], int laser_y, bool *game_over) {
     // Check if there are any stones in the leftmost column
     int row = 0;
-    while (row < SIZE && !(*game_over)) {
+    while (row < SIZE && *game_over == false) {
         // If there is a block in column 0, note that the game is over.
         if (map[row][0] != EMPTY) {
             *game_over = true;
@@ -283,7 +283,7 @@ void rotate_map(int map[SIZE][SIZE], bool *game_over, bool *is_rotated) {
     int direction;
     scanf("%d", &direction);
 
-    if (!(*is_rotated)) {
+    if (*is_rotated == false) {
         // Note that the rotate has been used (even if it is not valid)
         *is_rotated = true;
 
