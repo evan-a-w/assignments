@@ -1,5 +1,3 @@
-#!usr/bin/python3
-
 import os
 import subprocess
 import random as rd
@@ -12,17 +10,15 @@ def test_functions(cmd_stream):
     command_list = " ".join([str(i) for i in cmd_stream])
     cmd_stream = bytes(command_list + "\x04", 'ascii')
 
-    #p1 = subprocess.Popen(my_path, cwd=slide_path, stdin=subprocess.PIPE, stdout=subprocess.PIPE).communicate(input=cmd_stream)[0]
-    res1 = subprocess.Popen(my_path, cwd=slide_path, stdin=subprocess.PIPE, stdout=subprocess.PIPE).communicate(input=cmd_stream)[0]
-    #p1.stdin.write(cmd_stream)
-    #p1.stdin.flush()
-    #res1 = p1.stdout.read()
+    p1 = subprocess.Popen(my_path, cwd=slide_path, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
+    p1.stdin.write(cmd_stream)
+    p1.stdin.flush()
+    res1 = p1.stdout.read()
 
-    #p2 = subprocess.Popen(ref, cwd=slide_path, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
-    #p2.stdin.write(cmd_stream)
-    #p2.stdin.flush()
-    #res2 = p2.stdout.read()
-    res2 = subprocess.Popen(ref, cwd=slide_path, stdin=subprocess.PIPE, stdout=subprocess.PIPE).communicate(input=cmd_stream)[0]
+    p2 = subprocess.Popen(ref, cwd=slide_path, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
+    p2.stdin.write(cmd_stream)
+    p2.stdin.flush()
+    res2 = p2.stdout.read()
 
     if res1 != res2:
         print("Failure with: " + command_list + "\n")
@@ -47,22 +43,28 @@ def random_command():
     rand_num = rd.random()
     if rand_num < 0.333:
         rand_num = rd.random()
-        lst = [1]
-        if rand_num < 0.5:
-            lst.append(1)
+        if rand_num < 0.75:
+            lst = [1]
+            if rand_num < 0.375:
+                lst.append(1)
+            else:
+                lst.append(-1)
+            return lst
         else:
-            lst.append(-1)
-        return lst
+            return [1,rd.randint(-10,10)]
     elif rand_num < 0.666:
         return [3]
     else:
         rand_num = rd.random()
-        lst = [4]
-        if rand_num < 0.5:
-            lst.append(2)
+        if rand_num < 0.75:
+            lst = [4]
+            if rand_num < 0.375:
+                lst.append(2)
+            else:
+                lst.append(1)
+            return lst
         else:
-            lst.append(1)
-        return lst
+            return [4,rd.randint(-10,10)]
 
 def valid(y, x):
     if 0 <= y and y <= 14:
@@ -74,8 +76,8 @@ def cmd_gen():
     block_count = rd.randint(5,50)
     cmd_list = [block_count]
     for i in range(block_count):
-        y = rd.randint(0,14)
-        x = rd.randint(0,14)
+        y = rd.randint(-2,16)
+        x = rd.randint(-2,16)
         cmd_list.append(y)
         cmd_list.append(x)
         cmd_list.append(random_block())
@@ -114,23 +116,22 @@ if __name__ == "__main__":
         os.environ.pop('PYTHONIOENCODING')
     except KeyError:
         pass
-    fst_cmd = [225]
-    end_cmd = [1, -1, 1, -1, 1, -1, 1, -1, 1, -1, 1, -1, 1, -1, 1, -1, 1, -1]
-    for i in range(15):
-        end_cmd.append(2)
-        end_cmd.append(1)
-        end_cmd.append(1)
-        for y in range(15):
-            fst_cmd.append(i)
-            fst_cmd.append(y)
-            fst_cmd.append(1)
-    fst_cmd.append(3)
-
-    test_functions(fst_cmd)
     
     count = 0
     while True:
-        test_functions(cmd_gen())
+        cmd_list = cmd_gen()
+        f = open("temp_test.in", "w")
+        st = " ".join([str(i) for i in cmd_list])
+        f.write(st)
+        f.close()
+        my_path = ["./slide_ext"]
+        ref = ['1511', 'slide_ext_both']
+        slide_path = "/import/adams/5/z5368211/assignments/slide"
+        cmd = ['diff', '<(./slide_ext < test1.in)', '<(1511 slide_ext_both < test1.in)'] 
+        cmd = './slide_ext < test1.in'
+
+        p1 = subprocess.Popen(cmd, cwd=slide_path, stdin=subprocess.PIPE, stdout=subprocess.PIPE, shell=True).communicate()[0]
+        print(p1)
         count += 1
         if count % 1000 == 0:
             print(count)

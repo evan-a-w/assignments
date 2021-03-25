@@ -133,8 +133,9 @@ if it encounters a mirror.
 The first test is designed to test whether mirror blocks function as required
 when reflected multiple times and destroying blocks (including TNT blocks).
 
-The second test is supposed to test whether the win condition is properly
-checked after mirror lasers destroy blocks.
+The second test is supposed to test an edge case, where TNT absorbs all of the
+charge of reflected lasers (but do not explode). This also tests win
+functionality.
 }}}
 
 Write two tests to test your implementation of Extension 2 ("Mirror Blocks").
@@ -149,10 +150,15 @@ Write two tests to test your implementation of Extension 2 ("Mirror Blocks").
 
 }}}
 [E2:Test 2] {{{
-4
-
-7 7 2 5 7 2 5 6 1 5 8 1
+5
+7 7 2
+6 7 4
+5 7 1
+8 7 4
+9 7 2
 
 2
-
+1 1
+1 1
+2
 }}}

@@ -481,8 +481,13 @@ void delete_in_direction(int map[SIZE][SIZE], int curr_row, int curr_col,
             // Set charge to 0 and remove the mirror block
             laser_charge = 0;
             map[curr_row][curr_col] = EMPTY;
-        
-        // Otherwise, if there is a block present, delete it (even TNT)
+        // If there is a TNT block, we want to delete it and set laser_charge
+        // to 0.
+        } else if (TNT_MIN <= map[curr_row][curr_col] && map[curr_row][curr_col]
+                   <= TNT_MAX) {
+            map[curr_row][curr_col] = EMPTY;
+            laser_charge = 0;
+        // Otherwise, if there is a block present, delete it
         } else if (map[curr_row][curr_col] != EMPTY) {
             map[curr_row][curr_col] = EMPTY;
             laser_charge--;

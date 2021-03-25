@@ -2,7 +2,7 @@
 // slide.c
 //
 // This program was written by Evan Williams (z5368211)
-// from 11/03/2021 - 21/03/2021
+// from 11/03/2021 - 25/03/2021
 //
 // Stage 3
 
@@ -33,8 +33,8 @@
 #define TNT_MIN 4
 #define TNT_MAX 9
 
-// These functions are used for the fundamental operations related to the map
-// and game.
+// These functions are used for the fundamental operations related to editing
+// and printing the map as well as running the game loop.
 void print_map(int map[SIZE][SIZE], int laser_y);
 void read_blocks(int map[SIZE][SIZE]);
 void instruction_loop(int map[SIZE][SIZE], int laser_y, 
@@ -75,6 +75,8 @@ int main (void) {
     read_blocks(map);
     print_map(map, laser_y);
 
+    // The instruction loop reads in user input until EOF and calls instruction
+    // commands.
     instruction_loop(map, laser_y, &game_over, &is_rotated); 
 
     return 0;
@@ -101,7 +103,7 @@ void print_map(int map[SIZE][SIZE], int laser_y) {
 }
 
 // This function gets user input and sets the map values for each given block.
-// This modifies both map arrays as well as the game state bools.
+// This also modifies the game state bools.
 void read_blocks(int map[SIZE][SIZE]) {
     int blocks;
     printf("How many blocks? ");
@@ -129,8 +131,8 @@ void instruction_loop(int map[SIZE][SIZE], int laser_y,
                       bool *game_over, bool *is_rotated) {
     // Read commands until an error or the game is over
     int instruction;
-    while (*game_over == false && (scanf("%d", &instruction) == SUCCESS)) {
 
+    while (*game_over == false && (scanf("%d", &instruction) == SUCCESS)) {
         // Move laser command
         if (instruction == MOVE_LASER) {
             int shift;
@@ -331,6 +333,7 @@ void rotate_in_direction(int map[SIZE][SIZE], int direction) {
 void shift_left(int map[SIZE][SIZE]) {
     for (int row = 0; row < SIZE; row++) {
         for (int col = 1; col < SIZE; col++) {
+            // If a position is empty, move its value to the column to its left.
             if (map[row][col] != EMPTY) {
                 map[row][col-1] = map[row][col];
                 map[row][col] = EMPTY;
