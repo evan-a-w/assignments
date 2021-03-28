@@ -12,16 +12,8 @@ def test_functions(cmd_stream):
     command_list = " ".join([str(i) for i in cmd_stream])
     cmd_stream = bytes(command_list + "\x04", 'ascii')
 
-    #p1 = subprocess.Popen(my_path, cwd=slide_path, stdin=subprocess.PIPE, stdout=subprocess.PIPE).communicate(input=cmd_stream)[0]
     res1 = subprocess.Popen(my_path, cwd=slide_path, stdin=subprocess.PIPE, stdout=subprocess.PIPE).communicate(input=cmd_stream)[0]
-    #p1.stdin.write(cmd_stream)
-    #p1.stdin.flush()
-    #res1 = p1.stdout.read()
 
-    #p2 = subprocess.Popen(ref, cwd=slide_path, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
-    #p2.stdin.write(cmd_stream)
-    #p2.stdin.flush()
-    #res2 = p2.stdout.read()
     res2 = subprocess.Popen(ref, cwd=slide_path, stdin=subprocess.PIPE, stdout=subprocess.PIPE).communicate(input=cmd_stream)[0]
 
     if res1 != res2:
@@ -71,7 +63,7 @@ def valid(y, x):
     return False
 
 def cmd_gen():
-    block_count = rd.randint(5,50)
+    block_count = rd.randint(50,500)
     cmd_list = [block_count]
     for i in range(block_count):
         y = rd.randint(0,14)
@@ -102,7 +94,7 @@ def cmd_gen():
         if cmd_list[3] < 0:
             cmd_list[3] = -cmd_list[3]
         
-    command_count = rd.randint(1,50)
+    command_count = rd.randint(50,500)
     for _ in range(command_count):
         for i in random_command():
             cmd_list.append(i)
@@ -114,23 +106,11 @@ if __name__ == "__main__":
         os.environ.pop('PYTHONIOENCODING')
     except KeyError:
         pass
-    fst_cmd = [225]
-    end_cmd = [1, -1, 1, -1, 1, -1, 1, -1, 1, -1, 1, -1, 1, -1, 1, -1, 1, -1]
-    for i in range(15):
-        end_cmd.append(2)
-        end_cmd.append(1)
-        end_cmd.append(1)
-        for y in range(15):
-            fst_cmd.append(i)
-            fst_cmd.append(y)
-            fst_cmd.append(1)
-    fst_cmd.append(3)
 
-    test_functions(fst_cmd)
-    
     count = 0
     while True:
-        test_functions(cmd_gen())
+        cmd_list = cmd_gen()
+        test_functions(cmd_list)
         count += 1
         if count % 1000 == 0:
             print(count)

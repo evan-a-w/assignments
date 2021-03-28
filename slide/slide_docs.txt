@@ -23,10 +23,6 @@ Essentially, I made it so that if the current map is empty, it sets the respecti
 to true, and outputs "Game Won!" only if both of these variables are true. This allows for accurate reporting of
 victories.
 
-The tests that I wrote were adapted versions of some of the earlier tests (with many blocks). I managed to find out 
-about the "diff" command, which I used to verify whether the tests produced the same output in my program and
-the reference.
-
 The first test was specifically designed to test the shifting functionality of my program, including whether it
 accurately reported losses. Included in this test was a rotate command, which I just used to ensure that rotate
 functionality continued to work with the night mode.
