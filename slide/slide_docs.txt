@@ -4,8 +4,9 @@ Write a summary of how you made the changes that you did:
 
 [E1:Summary] {{{
 In order to implement the different modes, I first made a new night_map array and then 
-created a pointer to the same type as the map array. This allowed me to easily switch between the two maps
-without having to alter functions, by simply dereferencing this pointer.
+created a pointer to an integer array with the size of the map array. 
+This allowed me to easily switch between the two maps by simply changing which array this pointer points to.
+Passing the array to my functions now requires dereferencing this pointer, but no other changes to functions were necessary. 
 
 I then adapted the main function to scan the absolute value of negative numbers to the night map instead of
 the day map, and checked whether there were initially any blocks in the day map. If not, the game would immediately
@@ -17,11 +18,13 @@ These include:
     - night_win, which indicates whether the night map is empty and therefore whether that half of the game is won.
     - day_win, which is the same as night_win but for the day map.
 
-The final point of adjustment was the fire_laser function, responsible for the fire_laser command. This function
+The next point of adjustment was the fire_laser function, responsible for the fire_laser command. This function
 holds the logic of checking whether the game is won, which requires an update in the night realm.
 Essentially, I made it so that if the current map is empty, it sets the respective win boolean (night_win or day_win)
 to true, and outputs "Game Won!" only if both of these variables are true. This allows for accurate reporting of
 victories.
+
+Finally, I made it so that the shift map command flips which map is in play, but does not do so if the night map is empty.
 
 The first test was specifically designed to test the shifting functionality of my program, including whether it
 accurately reported losses. Included in this test was a rotate command, which I just used to ensure that rotate
@@ -117,14 +120,16 @@ the fire laser command, which checked whether the current block has value 2.
 
 In this branch, I delegated the logic to a function called reflect_laser.
 This function is given the current laser position, the laser charge and
-the direction that the laser should go in x and y. This is initially 0 for x
-and 1 for y, because when the laser is first reflected, it moves vertically.
+the direction that the laser should go in x and y. This is initially 0 for direction_x
+and 1 for direction_y, because when the laser is first reflected, it moves vertically.
 
 In the reflect_laser function, the laser charge is halved, and then another
 function, delete_in_direction, is called twice. This function implements
 the logic to loop over the blocks in the lasers path, decrementing the laser
 charge and removing blocks. This function also recursively calls reflect_laser
-if it encounters a mirror.
+if it encounters a mirror. In these recursive calls, I used the not (!) operator
+on the direction_x and direction_y, since reflected lasers alternate between
+travelling horizontally and vertically.
 
 The first test is designed to test whether mirror blocks function as required
 when reflected multiple times and destroying blocks (including TNT blocks).
