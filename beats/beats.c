@@ -50,12 +50,12 @@ struct beat {
 // If you use the provided struct note, you add fields
 // to it to store other information.
 
-struct note {
+typedef struct note {
     // You may choose to add or change fields in this struct.
     int octave;
     int key;
     struct note *next;
-};
+} *Note;
 
 // Add any other structs you define here.
 
@@ -63,7 +63,7 @@ struct note {
 
 // Add prototypes for any extra functions you create here.
 
-struct note *create_note(int octave, int key);
+Note create_note(int octave, int key);
 
 // Return a malloced Beat with fields initialized.
 Beat create_beat(void) {
@@ -104,7 +104,7 @@ int add_note_to_beat(Beat beat, int octave, int key) {
     }
 
     // Create a new pointer to the notes. 
-    struct note *curr_note = beat->notes;
+    Note curr_note = beat->notes;
 
     // Get to the last note. This note has the max octave and max key for that
     // octave since it is a sorted list.
@@ -133,8 +133,8 @@ int add_note_to_beat(Beat beat, int octave, int key) {
 
 // Malloc a note pointer and assign its octave and key values to the parameters
 // of the function. This pointer is then returned.
-struct note *create_note(int octave, int key) {
-    struct note *new_note = malloc(sizeof(struct note));
+Note create_note(int octave, int key) {
+    Note new_note = malloc(sizeof(struct note));
     new_note->octave = octave;
     new_note->key = key;
     new_note->next = NULL;
