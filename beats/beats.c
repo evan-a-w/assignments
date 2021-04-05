@@ -1,8 +1,8 @@
 // Assignment 2 21T1 COMP1511: Beats by CSE
 // beats.c
 //
-// This program was written by YOUR-NAME-HERE (z5555555)
-// on INSERT-DATE-HERE
+// This program was written by Evan Williams (z5368211)
+// on 06/04/2021 - 
 //
 // Version 1.0.0: Assignment released.
 
@@ -13,8 +13,14 @@
 // Add any extra #includes your code needs here.
 
 #include "beats.h"
+#include <limits.h>
+#include <stdbool.h>
 
 // Add your own #defines here.
+#define OCTAVE_MIN 0
+#define OCTAVE_MAX 10
+#define KEY_MIN 0
+#define KEY_MAX 11
 
 //////////////////////////////////////////////////////////////////////
 
@@ -57,7 +63,7 @@ struct note {
 
 // Add prototypes for any extra functions you create here.
 
-
+struct note *create_note(int octave, int key);
 
 // Return a malloced Beat with fields initialized.
 Beat create_beat(void) {
@@ -82,20 +88,100 @@ Beat create_beat(void) {
 
 // Add a note to the end of a beat.
 int add_note_to_beat(Beat beat, int octave, int key) {
-    printf("add_note_to_beat not implemented yet.\n");
+    // If the octave is not valid, return INVALID_NOTE
+    if (OCTAVE_MIN > octave || octave > OCTAVE_MAX) {
+        return INVALID_OCTAVE;
+    // Do the same for the key
+    } else if (KEY_MIN > key || key > KEY_MAX) {
+        return INVALID_KEY;
+    }
+   
+    // If beat->notes is NULL, the new note must be valid so we add it to the
+    // notes and return.
+    if (beat->notes == NULL) {
+        beat->notes = create_note(octave, key);
+        return VALID_NOTE;
+    }
+
+    // Create a new pointer to the notes. 
+    struct note *curr_note = beat->notes;
+
+    // Get to the last note. This note has the max octave and max key for that
+    // octave since it is a sorted list.
+    while (curr_note->next != NULL) {
+        curr_note = curr_note->next;
+    }
+    
+    int max_octave = curr_note->octave;
+    int max_key = curr_note->key; 
+
+    // If the octave is lower than the max, it is invalid.
+    if (octave < max_octave) {
+        return NOT_HIGHEST_NOTE;
+    // If the octaves are equal but the key is not greater than the max, it is
+    // also invalid.
+    } else if (octave == max_octave && key <= max_key) {
+        return NOT_HIGHEST_NOTE;
+    }
+
+    // All checks have passed, so we now add the note to the end of the notes.
+    // The last note is curr_note, so we simply add to that.
+    curr_note->next = create_note(octave, key); 
+
     return VALID_NOTE;
+}
+
+// Malloc a note pointer and assign its octave and key values to the parameters
+// of the function. This pointer is then returned.
+struct note *create_note(int octave, int key) {
+    struct note *new_note = malloc(sizeof(struct note));
+    new_note->octave = octave;
+    new_note->key = key;
+    new_note->next = NULL;
+    return new_note;
 }
 
 // Print the contents of a beat.
 void print_beat(Beat beat) {
-    printf("print_beat not implemented yet.\n");
+    struct note *curr_note = beat->notes;
+    
+    // Traverse the list of notes and print values.
+    while (curr_note != NULL) {
+        // Print the octave and key.
+        printf("%d %02d", curr_note->octave, curr_note->key);
+
+        // Only print the pipe if there is an upcoming note.
+        if (curr_note->next != NULL) {
+            printf(" | "); 
+        }
+        curr_note = curr_note->next;
+    }
+    printf("\n");
+
     return;
 }
 
 // Count the number of notes in a beat that are in a given octave.
 int count_notes_in_octave(Beat beat, int octave) {
-    printf("count_notes_in_octave not implemented yet.\n");
-    return 0;
+    struct note *curr_note = beat->notes;
+
+    // First get to the initial note of the given octave.
+    while (curr_note != NULL && curr_note->octave != octave) {
+        curr_note = curr_note->next;
+    }
+
+    // If we are already at the end, there are 0 notes of the given octave.
+    if (curr_note == NULL) {
+        return 0;
+    }
+
+    // Continue traversing the list until the end or we get past the octave.
+    int count = 0;
+    while (curr_note != NULL && curr_note->octave == octave) {
+        curr_note = curr_note->next;
+        count++;
+    }
+    return count;
 }
 
 //////////////////////////////////////////////////////////////////////
