@@ -32,6 +32,7 @@
 struct track {
     // TODO: You will have to add extra fields here in Stage 2.
     struct beat *head;
+    struct beat *selected_beat;
 };
 
 // You don't have to use the provided struct beat, you are free to
@@ -193,32 +194,94 @@ Track create_track(void) {
     // Note: there is no fprintf in this function, as the
     // Stage 1 autotests call create_track but expect it to return NULL
     // (so this function should do nothing in Stage 1).
-
-    return NULL;
+    Track track = malloc(sizeof(struct track));
+    track->head = NULL;
+    track->selected_beat = NULL;
+    return track;
 }
 
 // Add a beat after the current beat in a track.
 void add_beat_to_track(Track track, Beat beat) {
-    printf("add_beat_to_track not implemented yet.\n");
+    // If the track is playing, insert the new beat after the current beat.
+    if (track->selected_beat != NULL) {
+        beat->next = track->selected_beat->next;
+        track->selected_beat->next = beat;
+
+    // Otherwise, put it as the first element.
+    } else {
+        beat->next = track->head;
+        track->head = beat;
+    }
     return;
 }
 
 // Set a track's current beat to the next beat.
 int select_next_beat(Track track) {
-    printf("select_next_beat not implemented yet.\n");
-    return TRACK_STOPPED;
+    // If track is stopped, set the current beat to the first beat and return
+    // that the track is playing.
+    if (track->selected_beat == NULL) {
+        track->selected_beat = track->head;
+        return TRACK_PLAYING;
+
+    // Otherwise, change the current beat to the beat after the current beat.
+    } else {
+        track->selected_beat = track->selected_beat->next;
+    }
+
+    // If the current beat is NULL, we are at the end of the track, so 
+    // return that it is stopped.
+    if (track->selected_beat == NULL) {
+        return TRACK_STOPPED;
+    }
+
+    // Otherwise, the track is playing.
+    return TRACK_PLAYING;
 }
 
 // Print the contents of a track.
 void print_track(Track track) {
-    printf("print_track not implemented yet.\n");
+    // Traverse the list of beats, printing info concerning each beat.
+    Beat curr_beat = track->head;
+    Beat selected_beat = track->selected_beat;
+    int index = 1;
+    while (curr_beat != NULL) {
+        if (curr_beat == selected_beat) {
+            putchar('>');
+        } else {
+            putchar(' ');
+        }
+        
+        printf("[%d] ", index);
+        
+        // Print the beat. This also outputs a newline at the end.
+        print_beat(curr_beat);
+
+        curr_beat = curr_beat->next; 
+        index++;
+    }
     return;
 }
 
 // Count beats after the current beat in a track.
 int count_beats_left_in_track(Track track) {
-    printf("count_beats_left_in_track not implemented yet.\n");
-    return 0;
+    int count = 0;
+   
+    // The beat should start as the beat after the selected beat i
+    // if the track is playing, or the first beat if not. 
+    Beat curr_beat;
+    if (track->selected_beat != NULL) {
+        curr_beat = track->selected_beat->next;
+    } else {
+        curr_beat = track->head;
+    }
+    
+    // Count all the beats after and including curr_beat.
+    while (curr_beat != NULL) {
+        count++;
+        curr_beat = curr_beat->next;
+    }
+
+    return count;
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -231,6 +294,20 @@ void free_beat(Beat beat) {
     // Stage 1 & 2 autotests call free_beat but don't check whether
     // the memory has been freed (so this function should do nothing in
     // Stage 1 & 2, rather than print an error).
+
+    // Traverse the beats.
+    while (beat != NULL) {
+        // Traverse and free all notes.
+        Note curr_note = beat->notes;
+        while (curr_note != NULL) {
+            Note next = curr_note->next;
+            free(curr_note);
+            curr_note = next;
+        }
+        Beat next = beat->next;
+        free(beat);
+        beat = next;
+    }
     return;
 }
 
@@ -240,12 +317,49 @@ void free_track(Track track) {
     // Stage 1 & 2 autotests call free_track but don't check whether
     // the memory has been freed (so this function should do nothing in
     // Stage 1 & 2, rather than print an error).
+
+    // Free all beats in the track with the free_beat function.
+    // Since the selected beat is in the list of beats, it is also freed.
+    free_beat(track->head);
+    free(track);
     return;
 }
 
 // Remove the currently selected beat from a track.
 int remove_selected_beat(Track track) {
-    printf("remove_selected_beat not implemented yet.");
+    Beat selected_beat = track->selected_beat;
+    if (selected_beat == NULL) {
+        return TRACK_STOPPED;
+    }
+    
+    Beat curr_beat = track->head;
+    if (curr_beat == selected_beat) {
+        // Set the head to the next beat and free the current beat.
+        track->head = curr_beat->next;
+        track->selected_beat = track->head;
+        curr_beat->next = NULL;
+        free_beat(curr_beat);    
+    }
+
+    // Traverse the beats until the next beat is the selected beat.
+    while (curr_beat->next != selected_beat) {
+        curr_beat = curr_beat->next; 
+    }
+
+    // Remove the selected beat and set selected_beat to the beat after.
+    curr_beat->next = selected_beat->next;
+    track->selected_beat = curr_beat->next;
+
+    // Free the old selected beat.
+    selected_beat->next = NULL;
+    free_beat(selected_beat);
+    
+    // If there is a selected beat, return TRACK_PLAYING. Otherwise, return
+    // TRACK_STOPPED.
+    if (track->selected_beat != NULL) {
+        return TRACK_PLAYING;
+    }
+
     return TRACK_STOPPED;
 }
 
