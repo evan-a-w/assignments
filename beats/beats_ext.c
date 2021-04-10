@@ -67,6 +67,8 @@ typedef struct note {
 
 Note create_note(int octave, int key);
 void insert_note_to_beat(Beat beat, int octave, int key);
+Beat get_beat_range(Beat first_beat, int range_length);
+int reverse_beat_range(Beat first_beat, Beat end_beat);
 
 // Return a malloced Beat with fields initialized.
 Beat create_beat(void) {
@@ -459,13 +461,7 @@ void cut_range_to_end(Track track, int range_length) {
     }
 
     Beat first_beat = curr_beat->next;
-
-    int i = 0;
-    while (curr_beat->next != NULL && i < range_length) {
-        curr_beat = curr_beat->next;
-        i++;
-    }
-    Beat end_beat = curr_beat;
+    Beat end_beat = get_beat_range(first_beat, range_length);
 
     // If the next beat is NULL, don't do anything because the
     // subsection is already at the end.
@@ -489,47 +485,58 @@ void cut_range_to_end(Track track, int range_length) {
 
 // Reverse a list of beats within a range of a track.
 int reverse_range(Track track, int range_length) {
-    if (track == NULL) {
+    if (track == NULL || range_length < 1) {
         return 0;
     }
-    if (range_length < 1) {
-        return 0;
-    }
-    
-    Beat curr_beat = track->selected_beat;
+
+    Beat first_beat = track->selected_beat;
     
     // If track is stopped, do nothing.
-    if (curr_beat == NULL) {
-        return;
+    if (first_beat == NULL) {
+        return 0;
     }
 
-    Beat first_beat = curr_beat->next;
+    Beat end_beat = get_beat_range(first_beat, range_length - 1); 
 
+    int count = reverse_beat_range(track->head, first_beat, end_beat);
+    
+    return count;
+}
+
+// This function returns the beat range_length beats away from first_beat,
+// or the last beat in the list if it is too short.
+Beat get_beat_range(Beat first_beat, int range_length) {
+    Beat curr_beat = first_beat;
     int i = 0;
     while (curr_beat->next != NULL && i < range_length) {
         curr_beat = curr_beat->next;
         i++;
     }
-    Beat end_beat = curr_beat;
+    return curr_beat;
+}
 
-    // If the next beat is NULL, don't do anything because the
-    // subsection is already at the end.
-    if (end_beat->next == NULL) {
-        return;
+// Reverses the range of beats from first_beat to end_beat.
+// Assumes end_beat is not NULL. Returns the count of beats reversed.
+int reverse_beat_range(Beat head, Beat first_beat, Beat end_beat) {
+    // Get to the Beat before the first beat.
+    Beat insert_after = head;
+    while (insert_after->next != first_beat) {
+        insert_after = insert_after->next;
     }
 
-    track->selected_beat->next = curr_beat->next;
+    Beat curr_beat = first_beat;
+    Beat prev = end_beat->next;
 
-    // Traverse the list again until we find the end.
-    curr_beat = curr_beat->next;
-    while (curr_beat->next != NULL) {
-        curr_beat = curr_beat->next;
+    int count = 0;
+    while (curr_beat != end_beat && curr_beat != NULL) {
+        Beat next = curr_beat->next;
+        curr_beat->next = prev;
+        prev = curr_beat;
+        curr_beat = next;
+        count++;
     }
-
-    curr_beat->next = first_beat;
-    end_beat->next = NULL;
     
-    return;
-    printf("reverse_range not implemented yet.");
-    return 0;
+    insert_after->next = prev;
+
+    return count; 
 }

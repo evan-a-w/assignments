@@ -33,7 +33,7 @@
 // Stage 1
 #define COMMAND_ADD_NOTE 'a'
 #define COMMAND_PRINT_BEAT 'p'
-#define COMMAND_COUNT_NOTES_IN_OCTAVE 'c'
+#define COMMAND_REVERSE_RANGE 'V'
 
 // Stage 2
 #define COMMAND_ADD_BEAT 'A'
@@ -49,6 +49,8 @@
 #define RETURN_SILENT 1
 #define RETURN_PRINT 2
 
+#define COMMAND_COUNT_NOTES_IN_OCTAVE 'c'
+#define COMMAND_CUT_RANGE_TO_END 'X'
 
 typedef struct _state {
     Beat building_beat;
