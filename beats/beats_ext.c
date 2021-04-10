@@ -15,6 +15,7 @@
 #include "ext.h"
 #include <limits.h>
 #include <stdbool.h>
+#include <string.h>
 
 // Add your own #defines here.
 #define OCTAVE_MIN 0
@@ -446,12 +447,89 @@ void insert_note_to_beat(Beat beat, int octave, int key) {
 
 // Cut a range of beats to the end of a track.
 void cut_range_to_end(Track track, int range_length) {
-    printf("cut_range_to_end not implemented yet.");
+    if (range_length < 1) {
+        return;
+    }
+    
+    Beat curr_beat = track->selected_beat;
+    
+    // If track is stopped, do nothing.
+    if (curr_beat == NULL) {
+        return;
+    }
+
+    Beat first_beat = curr_beat->next;
+
+    int i = 0;
+    while (curr_beat->next != NULL && i < range_length) {
+        curr_beat = curr_beat->next;
+        i++;
+    }
+    Beat end_beat = curr_beat;
+
+    // If the next beat is NULL, don't do anything because the
+    // subsection is already at the end.
+    if (end_beat->next == NULL) {
+        return;
+    }
+
+    track->selected_beat->next = curr_beat->next;
+
+    // Traverse the list again until we find the end.
+    curr_beat = curr_beat->next;
+    while (curr_beat->next != NULL) {
+        curr_beat = curr_beat->next;
+    }
+
+    curr_beat->next = first_beat;
+    end_beat->next = NULL;
+    
     return;
 }
 
 // Reverse a list of beats within a range of a track.
 int reverse_range(Track track, int range_length) {
+    if (track == NULL) {
+        return 0;
+    }
+    if (range_length < 1) {
+        return 0;
+    }
+    
+    Beat curr_beat = track->selected_beat;
+    
+    // If track is stopped, do nothing.
+    if (curr_beat == NULL) {
+        return;
+    }
+
+    Beat first_beat = curr_beat->next;
+
+    int i = 0;
+    while (curr_beat->next != NULL && i < range_length) {
+        curr_beat = curr_beat->next;
+        i++;
+    }
+    Beat end_beat = curr_beat;
+
+    // If the next beat is NULL, don't do anything because the
+    // subsection is already at the end.
+    if (end_beat->next == NULL) {
+        return;
+    }
+
+    track->selected_beat->next = curr_beat->next;
+
+    // Traverse the list again until we find the end.
+    curr_beat = curr_beat->next;
+    while (curr_beat->next != NULL) {
+        curr_beat = curr_beat->next;
+    }
+
+    curr_beat->next = first_beat;
+    end_beat->next = NULL;
+    
+    return;
     printf("reverse_range not implemented yet.");
     return 0;
 }
