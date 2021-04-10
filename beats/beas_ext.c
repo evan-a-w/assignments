@@ -12,7 +12,7 @@
 
 // Add any extra #includes your code needs here.
 
-#include "ext.h"
+#include "beats.h"
 #include <limits.h>
 #include <stdbool.h>
 
@@ -65,7 +65,6 @@ typedef struct note {
 // Add prototypes for any extra functions you create here.
 
 Note create_note(int octave, int key);
-void insert_note_to_beat(Beat beat, int octave, int key);
 
 // Return a malloced Beat with fields initialized.
 Beat create_beat(void) {
@@ -370,73 +369,8 @@ int remove_selected_beat(Track track) {
 
 // Add note to beat, given its 'musical notation'.
 int add_musical_note_to_beat(Beat beat, char *musical_notation) {
-    int len = strlen(musical_notation);
-    // Check if the note is of a valid length
-    if (len < 2) {
-        return INVALID_MUSICAL_NOTE;
-    }
-    
-    int octave = musical_notation[0];
-    char letter = musical_notation[1];
-    
-    // Check whether each value is valid.
-    int invalid_octave = '0' > octave || octave > '9';
-    int invalid_letter = 'A' > letter || letter > 'G';
-
-    int key = letter - 'A';
-
-    if (invalid_octave || invalid_letter) {
-        return INVALID_MUSICAL_NOTE;
-    }
-     
-    int index = 2; 
-    while (index < len && musical_notation[index] != '\0') {
-        if (musical_notation[index] != '#') {
-            return INVALID_MUSICAL_NOTE;
-        }
-        key++;
-        if (key >= KEY_MAX) {
-            key = key - KEY_MAX;
-            octave++;
-        }
-    } 
-    
-    insert_note_to_beat(beat, octave, key);
-
+    printf("add_musical_note_to_beat not implemented yet.");
     return VALID_NOTE;
-}
-
-// This function inserts a note into a beat 
-// that does not have to be larger than all present notes.
-void insert_note_to_beat(Beat beat, int octave, int key) {
-    Note curr_note = beat->notes;
-
-    // Booleans to track the status of the note and loop.
-    int exists_in_notes = 0;
-    int exit_loop = 0;
-
-    // Loop over the list of notes until the end or any end condition.
-    while (curr_note->next != NULL && !exit_loop) {
-        int next_octave = curr_note->next->octave;
-        int next_key = curr_note->next->key; 
-
-        if (next_octave > octave) {
-            exit_loop = 1;
-        } else if (next_octave == octave && next_key >= key) {
-            if (next_key == key) {
-                exists_in_notes = 1;
-            }
-            exit_loop = 1;
-        }
-        curr_note = curr_note->next;
-    }
-
-    // Insert the note after curr_note.
-    if (!exists_in_notes) {
-        Note new_note = create_note(octave, key);  
-        new_note->next = curr_note->next;
-        curr_note->next = new_note;
-    } 
 }
 
 
