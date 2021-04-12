@@ -16,11 +16,11 @@
 // But note you are not permitted to use functions from string.h
 // so do not #include <string.h>
 //
-#include "beats_cp.h"
+#include "beats.h"
 #include <limits.h>
 #include <stdbool.h>
 
-#include "ext_copy.h"
+#include "ext_beats.h"
 
 // Add your own #defines here.
 #define OCTAVE_MIN 0
