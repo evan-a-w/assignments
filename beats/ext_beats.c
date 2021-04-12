@@ -70,8 +70,9 @@ typedef struct note {
 
 int is_lower(int octave, int key, Note note);
 Note create_note(int octave, int key);
-void merge_into(Beat result, Beat merge);
-void merge_range(Beat dest, Beat curr, int range, int *count_merged);
+void merge_into(Beat result, Beat merge, Beat head);
+void merge_range(Beat dest, Beat curr, Beat head, int range, int *count_merged);
+void insert_before(Beat src, Beat dest, Beat head);
 
 // Return a malloced Beat with fields initialized.
 Beat create_beat(void) {
@@ -409,21 +410,21 @@ void merge_beats(Track track, int beats_to_merge, int merged_beats) {
 // This function merges range - 1 beats starting from curr into dest,
 // modifying count_merged to reflect the number of beats merged.
 void merge_range(Beat dest, Beat curr, int range, int *count_merged) {
-    Beat new_curr = curr;
     if (dest == NULL || curr == NULL) {
         return;
     }
-    for (int i = 0; new_curr != NULL && i < range - 1; i++) {
-        Beat tmp = new_curr->next;
-        merge_into(dest, new_curr);
+    for (int i = 0; curr != NULL && i < range - 1; i++) {
+        Beat tmp = curr->next;
+        merge_into(dest, curr);
         dest->next = tmp;
-        new_curr = tmp; 
+        curr = tmp; 
         *count_merged += 1;
     }
-    dest = new_curr;
-    curr = new_curr->next;
+    dest = curr;
+    curr = curr->next;
 }
 
+// TODO: Fix merging lists for multiple results.
 // Merge the merge Beat into the result Beat.
 void merge_into(Beat result, Beat merge) {
     if (result == NULL || merge == NULL) {
@@ -433,11 +434,7 @@ void merge_into(Beat result, Beat merge) {
     Note dest = result->notes;
     while (src != NULL) {
         if (is_lower(src->octave, src->key, dest) == 1) {              
-            Note tmp_src = src->next;
-            src->next = dest;
-            dest = src;
-            src = tmp_src;
-            result->notes = dest;
+            result->notes = insert_before(src, dest, head);
         } else if (is_lower(src->octave, src->key, dest->next)) {
             Note tmp_dest = dest->next;
             Note tmp_src = src->next;
@@ -448,6 +445,18 @@ void merge_into(Beat result, Beat merge) {
         } else {
             dest = dest->next;
         }
+    }
+}
+
+// Insert a Note before a given Note, changing dest to be src and src
+// to be the beat after src.
+Note insert_before(Note src, Note dest, Note head) {
+    if (dest == head) {
+        Note tmp_src = src->next;
+        src->next = dest;
+        dest = src;
+        src = tmp_src;
+        result->notes = dest;
     }
 }
 
