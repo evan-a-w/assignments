@@ -1,0 +1,36 @@
+[COMP1511 Extension Work]
+
+Write a summary of how you made the changes that you did:
+
+[E1:Summary] {{{
+
+}}}
+
+Write two tests to test your implementation of Extension 1 (Merging).
+
+*This test should *ONLY* test merging into 1 beat.*
+[E1:Test 1] {{{
+
+}}}
+
+*This test can test merging into any number of beats*
+[E1:Test 2] {{{
+
+}}}
+
+===========================================================================
+
+Write a summary of how you made the changes that you did:
+
+[E2:Summary] {{{
+
+}}}
+
+Write two tests to test your implementation of Extension 2 (Save and Restore).
+
+[E2:Test 1] {{{
+
+}}}
+[E2:Test 2] {{{
+
+}}}
