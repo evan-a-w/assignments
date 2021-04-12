@@ -135,8 +135,10 @@ int add_note_to_beat(Beat beat, int octave, int key) {
 int is_lower(int octave, int key, Note note) {
     // If the octave is lower than the max, it is lower.
     // ALso, if the octaves are equal but the key is not greater, it is lower.
-    if (note == NULL || octave < note->octave || (octave == note->octave && key <= note->key)) {
+    if (note == NULL || octave < note->octave || (octave == note->octave && key < note->key)) {
         return 1;
+    } else if (octave == note->octave && key == note->key) {
+        return 2;
     }
 
     return 0;
@@ -383,6 +385,9 @@ void merge_beats(Track track, int beats_to_merge, int merged_beats) {
     int remainder = beats_to_merge % merged_beats;
 
     int count_merged = 0;
+    if (track->selected_beat == NULL) {
+        return;
+    }
     Beat curr = track->selected_beat->next;
     Beat dest = track->selected_beat;
 
@@ -391,31 +396,49 @@ void merge_beats(Track track, int beats_to_merge, int merged_beats) {
     while (dest != NULL && curr != NULL && count_merged < beats_to_merge) {
         if (count_merged == 0) {
             merge_range(dest, curr, quotient + remainder, &count_merged);
+            count_merged++;
         } else {
             merge_range(dest, curr, quotient, &count_merged);
+            count_merged++;
         }
     }
+
+    track->selected_beat = track->selected_beat->next;
 }
 
 // This function merges range - 1 beats starting from curr into dest,
 // modifying count_merged to reflect the number of beats merged.
 void merge_range(Beat dest, Beat curr, int range, int *count_merged) {
-    for (int i = 0; i < range && curr != NULL; i++) {
-        Beat tmp = curr->next;
-        merge_into(dest, curr);
+    Beat new_curr = curr;
+    if (dest == NULL || curr == NULL) {
+        return;
+    }
+    for (int i = 0; new_curr != NULL && i < range - 1; i++) {
+        Beat tmp = new_curr->next;
+        merge_into(dest, new_curr);
         dest->next = tmp;
-        curr = tmp;
+        new_curr = tmp; 
         *count_merged += 1;
     }
-    dest = curr;
-    curr = curr->next;
+    dest = new_curr;
+    curr = new_curr->next;
 }
 
+// Merge the merge Beat into the result Beat.
 void merge_into(Beat result, Beat merge) {
+    if (result == NULL || merge == NULL) {
+        return;
+    }
     Note src = merge->notes;
     Note dest = result->notes;
     while (src != NULL) {
-        if (is_lower(src->octave, src->key, dest->next)) {
+        if (is_lower(src->octave, src->key, dest) == 1) {              
+            Note tmp_src = src->next;
+            src->next = dest;
+            dest = src;
+            src = tmp_src;
+            result->notes = dest;
+        } else if (is_lower(src->octave, src->key, dest->next)) {
             Note tmp_dest = dest->next;
             Note tmp_src = src->next;
             dest->next = src;
@@ -426,7 +449,6 @@ void merge_into(Beat result, Beat merge) {
             dest = dest->next;
         }
     }
-    free(merge);
 }
 
 ////////////////////////////////////////////////////////////////////////
