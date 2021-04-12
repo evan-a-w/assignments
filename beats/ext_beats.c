@@ -70,7 +70,7 @@ typedef struct note {
 
 int is_lower(int octave, int key, Note note);
 Note create_note(int octave, int key);
-void merge_two(Beat result, Beat merge);
+void merge_into(Beat result, Beat merge);
 void merge_range(Beat dest, Beat curr, int range, int *count_merged);
 
 // Return a malloced Beat with fields initialized.
