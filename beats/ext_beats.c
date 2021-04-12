@@ -1,8 +1,8 @@
 // Assignment 2 21T1 COMP1511: CS bEats
 // beats.c
 //
-// This program was written by YOUR-NAME-HERE (z5555555)
-// on INSERT-DATE-HERE
+// This program was written by Evan Williams (z5368211)
+// on 13/04/2021
 //
 // Version 1.0.0: Assignment released.
 
@@ -68,8 +68,10 @@ typedef struct note {
 
 // Add prototypes for any extra functions you create here.
 
+int is_lower(int octave, int key, Note note);
 Note create_note(int octave, int key);
 void merge_two(Beat result, Beat merge);
+void merge_range(Beat dest, Beat curr, int range, int *count_merged);
 
 // Return a malloced Beat with fields initialized.
 Beat create_beat(void) {
@@ -118,15 +120,7 @@ int add_note_to_beat(Beat beat, int octave, int key) {
         curr_note = curr_note->next;
     }
     
-    int max_octave = curr_note->octave;
-    int max_key = curr_note->key; 
-
-    // If the octave is lower than the max, it is invalid.
-    if (octave < max_octave) {
-        return NOT_HIGHEST_NOTE;
-    // If the octaves are equal but the key is not greater than the max, it is
-    // also invalid.
-    } else if (octave == max_octave && key <= max_key) {
+    if (is_lower(octave, key, curr_note)) {
         return NOT_HIGHEST_NOTE;
     }
 
@@ -135,6 +129,17 @@ int add_note_to_beat(Beat beat, int octave, int key) {
     curr_note->next = create_note(octave, key); 
 
     return VALID_NOTE;
+}
+
+// Returns whether a given octave and key are smaller than a note.
+int is_lower(int octave, int key, Note note) {
+    // If the octave is lower than the max, it is lower.
+    // ALso, if the octaves are equal but the key is not greater, it is lower.
+    if (note == NULL || octave < note->octave || (octave == note->octave && key <= note->key)) {
+        return 1;
+    }
+
+    return 0;
 }
 
 // Malloc a note pointer and assign its octave and key values to the parameters
@@ -374,22 +379,54 @@ int remove_selected_beat(Track track) {
 
 // Merge `beats_to_merge` beats into `merged_beats`
 void merge_beats(Track track, int beats_to_merge, int merged_beats) {
-    int count_beats = 0;
-    int count_merged = 0;
+    int quotient = beats_to_merge / merged_beats;
+    int remainder = beats_to_merge % merged_beats;
 
-    Beat curr_beat = track->selected_beat;
-    while (curr_beat != NULL && count_merged < merged_beats) {
-                
+    int count_merged = 0;
+    Beat curr = track->selected_beat->next;
+    Beat dest = track->selected_beat;
+
+    // First merge quotient + remainder beats into one.
+    // Then just do quotient.
+    while (dest != NULL && curr != NULL && count_merged < beats_to_merge) {
+        if (count_merged == 0) {
+            merge_range(dest, curr, quotient + remainder, &count_merged);
+        } else {
+            merge_range(dest, curr, quotient, &count_merged);
+        }
     }
 }
 
-void merge_two(Beat result, Beat merge) {
-    Note merge_notes = merge->notes;
-    Note result_notes = result->notes;
-    while (merge_notes != NULL) {
-        while (result_notes->octave < merge_notes->octave &&
-               result_notes->next)
+// This function merges range - 1 beats starting from curr into dest,
+// modifying count_merged to reflect the number of beats merged.
+void merge_range(Beat dest, Beat curr, int range, int *count_merged) {
+    for (int i = 0; i < range && curr != NULL; i++) {
+        Beat tmp = curr->next;
+        merge_into(dest, curr);
+        dest->next = tmp;
+        curr = tmp;
+        *count_merged += 1;
     }
+    dest = curr;
+    curr = curr->next;
+}
+
+void merge_into(Beat result, Beat merge) {
+    Note src = merge->notes;
+    Note dest = result->notes;
+    while (src != NULL) {
+        if (is_lower(src->octave, src->key, dest->next)) {
+            Note tmp_dest = dest->next;
+            Note tmp_src = src->next;
+            dest->next = src;
+            src->next = tmp_dest;
+            dest = src;
+            src = tmp_src;
+        } else {
+            dest = dest->next;
+        }
+    }
+    free(merge);
 }
 
 ////////////////////////////////////////////////////////////////////////

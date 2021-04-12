@@ -65,6 +65,7 @@ typedef struct note {
 // Add prototypes for any extra functions you create here.
 
 Note create_note(int octave, int key);
+int is_lower(int octave, int key, Note note);
 
 // Return a malloced Beat with fields initialized.
 Beat create_beat(void) {
@@ -113,15 +114,7 @@ int add_note_to_beat(Beat beat, int octave, int key) {
         curr_note = curr_note->next;
     }
     
-    int max_octave = curr_note->octave;
-    int max_key = curr_note->key; 
-
-    // If the octave is lower than the max, it is invalid.
-    if (octave < max_octave) {
-        return NOT_HIGHEST_NOTE;
-    // If the octaves are equal but the key is not greater than the max, it is
-    // also invalid.
-    } else if (octave == max_octave && key <= max_key) {
+    if (is_lower(octave, key, curr_note)) {
         return NOT_HIGHEST_NOTE;
     }
 
@@ -130,6 +123,17 @@ int add_note_to_beat(Beat beat, int octave, int key) {
     curr_note->next = create_note(octave, key); 
 
     return VALID_NOTE;
+}
+
+// Returns whether a given octave and key are smaller than a note.
+int is_lower(int octave, int key, Note note) {
+    // If the octave is lower than the max, it is lower.
+    // ALso, if the octaves are equal but the key is not greater, it is lower.
+    if (octave < note->octave || (octave == note->octave && key <= note->key)) {
+        return 1;
+    }
+
+    return 0;
 }
 
 // Malloc a note pointer and assign its octave and key values to the parameters
