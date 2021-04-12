@@ -69,6 +69,7 @@ typedef struct note {
 // Add prototypes for any extra functions you create here.
 
 Note create_note(int octave, int key);
+void merge_two(Beat result, Beat merge);
 
 // Return a malloced Beat with fields initialized.
 Beat create_beat(void) {
@@ -368,15 +369,27 @@ int remove_selected_beat(Track track) {
 }
 /////////////////////////////////////////////////////////////////////
 
-/////////////////////////////////////////////////////////////////////
-
-////////////////////////////////////////////////////////////////////////
 //                Extension -- Stage 4 Functions                      //
 ////////////////////////////////////////////////////////////////////////
 
 // Merge `beats_to_merge` beats into `merged_beats`
 void merge_beats(Track track, int beats_to_merge, int merged_beats) {
-    printf("merge_beats not implemented yet.\n");
+    int count_beats = 0;
+    int count_merged = 0;
+
+    Beat curr_beat = track->selected_beat;
+    while (curr_beat != NULL && count_merged < merged_beats) {
+                
+    }
+}
+
+void merge_two(Beat result, Beat merge) {
+    Note merge_notes = merge->notes;
+    Note result_notes = result->notes;
+    while (merge_notes != NULL) {
+        while (result_notes->octave < merge_notes->octave &&
+               result_notes->next)
+    }
 }
 
 ////////////////////////////////////////////////////////////////////////
