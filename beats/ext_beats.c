@@ -383,6 +383,9 @@ int remove_selected_beat(Track track) {
 
 // Merge `beats_to_merge` beats into `merged_beats`
 void merge_beats(Track track, int beats_to_merge, int merged_beats) {
+    if (beats_to_merge == merged_beats) {
+        return;
+    }
     int quotient = beats_to_merge / merged_beats;
     int remainder = beats_to_merge % merged_beats;
 
