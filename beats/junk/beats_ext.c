@@ -1,32 +1,29 @@
-// Assignment 2 21T1 COMP1511: CS bEats
+// Assignment 2 21T1 COMP1511: Beats by CSE
 // beats.c
 //
 // This program was written by Evan Williams (z5368211)
-// on 13/04/2021
+// on 06/04/2021 - 
 //
 // Version 1.0.0: Assignment released.
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 #include <assert.h>
 
 // Add any extra #includes your code needs here.
-//
-// But note you are not permitted to use functions from string.h
-// so do not #include <string.h>
-//
-#include "beats.h"
+
+#include "ext.h"
 #include <limits.h>
 #include <stdbool.h>
-
-#include "ext_beats.h"
+#include <string.h>
 
 // Add your own #defines here.
 #define OCTAVE_MIN 0
 #define OCTAVE_MAX 10
 #define KEY_MIN 0
 #define KEY_MAX 12
+
+//////////////////////////////////////////////////////////////////////
 
 // You don't have to use the provided struct track, you are free to
 // make your own struct instead.
@@ -68,11 +65,10 @@ typedef struct note {
 
 // Add prototypes for any extra functions you create here.
 
-int is_lower(int octave, int key, Note note);
 Note create_note(int octave, int key);
-void merge_into(Beat result, Beat merge);
-int merge_range(Beat dest, int range);
-Note insert_before(Note src, Note dest, Note head);
+void insert_note_to_beat(Beat beat, int octave, int key);
+Beat get_beat_range(Beat first_beat, int range_length);
+int reverse_beat_range(Beat first_beat, Beat end_beat);
 
 // Return a malloced Beat with fields initialized.
 Beat create_beat(void) {
@@ -121,7 +117,15 @@ int add_note_to_beat(Beat beat, int octave, int key) {
         curr_note = curr_note->next;
     }
     
-    if (is_lower(octave, key, curr_note)) {
+    int max_octave = curr_note->octave;
+    int max_key = curr_note->key; 
+
+    // If the octave is lower than the max, it is invalid.
+    if (octave < max_octave) {
+        return NOT_HIGHEST_NOTE;
+    // If the octaves are equal but the key is not greater than the max, it is
+    // also invalid.
+    } else if (octave == max_octave && key <= max_key) {
         return NOT_HIGHEST_NOTE;
     }
 
@@ -130,20 +134,6 @@ int add_note_to_beat(Beat beat, int octave, int key) {
     curr_note->next = create_note(octave, key); 
 
     return VALID_NOTE;
-}
-
-// Returns whether a given octave and key are smaller than a note.
-// Returns 2 if the notes are equal. Always returns 1 if note == NULL.
-int is_lower(int octave, int key, Note note) {
-    // If the octave is lower than the max, it is lower.
-    // ALso, if the octaves are equal but the key is not greater, it is lower.
-    if (note == NULL || octave < note->octave || (octave == note->octave && key < note->key)) {
-        return 1;
-    } else if (octave == note->octave && key == note->key) {
-        return 2;
-    }
-
-    return 0;
 }
 
 // Malloc a note pointer and assign its octave and key values to the parameters
@@ -376,127 +366,177 @@ int remove_selected_beat(Track track) {
 
     return TRACK_STOPPED;
 }
-/////////////////////////////////////////////////////////////////////
 
-//                Extension -- Stage 4 Functions                      //
-////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////
+//                        Stage 4 Functions                         //
+//////////////////////////////////////////////////////////////////////
 
-// Merge `beats_to_merge` beats into `merged_beats`
-void merge_beats(Track track, int beats_to_merge, int merged_beats) {
-    int quotient = beats_to_merge / merged_beats;
-    int remainder = beats_to_merge % merged_beats;
-
-    int count_merged = 0;
-    if (track->selected_beat == NULL) {
-        return;
+// Add note to beat, given its 'musical notation'.
+int add_musical_note_to_beat(Beat beat, char *musical_notation) {
+    int len = strlen(musical_notation);
+    // Check if the note is of a valid length
+    if (len < 2) {
+        return INVALID_MUSICAL_NOTE;
     }
-    Beat dest = track->selected_beat;
-    if (dest == NULL) {
-        return;
-    }
+    
+    int octave = musical_notation[0];
+    char letter = musical_notation[1];
+    
+    // Check whether each value is valid.
+    int invalid_octave = '0' > octave || octave > '9';
+    int invalid_letter = 'A' > letter || letter > 'G';
 
-    // First merge quotient + remainder beats into one.
-    // Then just do quotient.
-    while (dest != NULL && dest->next != NULL && count_merged < beats_to_merge) {
-        int range;
-        if (count_merged == 0) {
-            range = quotient + remainder;
-        } else {
-            range = quotient;
+    int key = letter - 'A';
+
+    if (invalid_octave || invalid_letter) {
+        return INVALID_MUSICAL_NOTE;
+    }
+     
+    int index = 2; 
+    while (index < len && musical_notation[index] != '\0') {
+        if (musical_notation[index] != '#') {
+            return INVALID_MUSICAL_NOTE;
         }
-        count_merged += merge_range(dest, range);
-        if (dest != NULL && dest->next != NULL && count_merged < beats_to_merge) {
-            dest = dest->next;
+        key++;
+        if (key >= KEY_MAX) {
+            key = key - KEY_MAX;
+            octave++;
         }
-    }
+    } 
+    
+    insert_note_to_beat(beat, octave, key);
 
-    track->selected_beat = dest->next;
+    return VALID_NOTE;
 }
 
-// This function merges range - 1 beats starting from curr into dest,
-// modifying count_merged to reflect the number of beats merged.
-int merge_range(Beat dest, int range) {
-    if (dest == NULL || dest->next == NULL) {
+// This function inserts a note into a beat 
+// that does not have to be larger than all present notes.
+void insert_note_to_beat(Beat beat, int octave, int key) {
+    Note curr_note = beat->notes;
+
+    // Booleans to track the status of the note and loop.
+    int exists_in_notes = 0;
+    int exit_loop = 0;
+
+    // Loop over the list of notes until the end or any end condition.
+    while (curr_note->next != NULL && !exit_loop) {
+        int next_octave = curr_note->next->octave;
+        int next_key = curr_note->next->key; 
+
+        if (next_octave > octave) {
+            exit_loop = 1;
+        } else if (next_octave == octave && next_key >= key) {
+            if (next_key == key) {
+                exists_in_notes = 1;
+            }
+            exit_loop = 1;
+        }
+        curr_note = curr_note->next;
+    }
+
+    // Insert the note after curr_note.
+    if (!exists_in_notes) {
+        Note new_note = create_note(octave, key);  
+        new_note->next = curr_note->next;
+        curr_note->next = new_note;
+    } 
+}
+
+
+//////////////////////////////////////////////////////////////////////
+//                        Stage 5 Functions                         //
+//////////////////////////////////////////////////////////////////////
+
+// Cut a range of beats to the end of a track.
+void cut_range_to_end(Track track, int range_length) {
+    if (range_length < 1) {
+        return;
+    }
+    
+    Beat curr_beat = track->selected_beat;
+    
+    // If track is stopped, do nothing.
+    if (curr_beat == NULL) {
+        return;
+    }
+
+    Beat first_beat = curr_beat->next;
+    Beat end_beat = get_beat_range(first_beat, range_length);
+
+    // If the next beat is NULL, don't do anything because the
+    // subsection is already at the end.
+    if (end_beat->next == NULL) {
+        return;
+    }
+
+    track->selected_beat->next = curr_beat->next;
+
+    // Traverse the list again until we find the end.
+    curr_beat = curr_beat->next;
+    while (curr_beat->next != NULL) {
+        curr_beat = curr_beat->next;
+    }
+
+    curr_beat->next = first_beat;
+    end_beat->next = NULL;
+    
+    return;
+}
+
+// Reverse a list of beats within a range of a track.
+int reverse_range(Track track, int range_length) {
+    if (track == NULL || range_length < 1) {
         return 0;
     }
 
-    int i = 1;
-    while (dest->next != NULL && i < range) {
-        Beat tmp = dest->next->next;
-        merge_into(dest, dest->next);
-        dest->next = tmp;
+    Beat first_beat = track->selected_beat;
+    
+    // If track is stopped, do nothing.
+    if (first_beat == NULL) {
+        return 0;
+    }
+
+    Beat end_beat = get_beat_range(first_beat, range_length - 1); 
+
+    int count = reverse_beat_range(track->head, first_beat, end_beat);
+    
+    return count;
+}
+
+// This function returns the beat range_length beats away from first_beat,
+// or the last beat in the list if it is too short.
+Beat get_beat_range(Beat first_beat, int range_length) {
+    Beat curr_beat = first_beat;
+    int i = 0;
+    while (curr_beat->next != NULL && i < range_length) {
+        curr_beat = curr_beat->next;
         i++;
     }
-
-    return i;
+    return curr_beat;
 }
 
-// Merge the merge Beat into the result Beat. This works for sure.
-void merge_into(Beat result, Beat merge) {
-    if (merge->notes == NULL) {
-        return;
+// Reverses the range of beats from first_beat to end_beat.
+// Assumes end_beat is not NULL. Returns the count of beats reversed.
+int reverse_beat_range(Beat head, Beat first_beat, Beat end_beat) {
+    // Get to the Beat before the first beat.
+    Beat insert_after = head;
+    while (insert_after->next != first_beat) {
+        insert_after = insert_after->next;
     }
-    if (result->notes == NULL) {
-        result->notes = merge->notes;
-        result->next = merge->next;
-        free(merge);
-        return;
+
+    Beat curr_beat = first_beat;
+    Beat prev = end_beat->next;
+
+    int count = 0;
+    while (curr_beat != end_beat && curr_beat != NULL) {
+        Beat next = curr_beat->next;
+        curr_beat->next = prev;
+        prev = curr_beat;
+        curr_beat = next;
+        count++;
     }
-    Note src = merge->notes;
-    Note dest = result->notes;
-    while (dest != NULL && src != NULL) {
-        int curr_lower = is_lower(src->octave, src->key, dest);
-        int next_lower = is_lower(src->octave, src->key, dest->next);
+    
+    insert_after->next = prev;
 
-        // If src is lower than the current thing, insert before it. This only
-        // happens when dest is the head.
-        if (curr_lower == 1) {
-            Note tmp = src->next; 
-            src->next = dest;
-            dest = src;
-            result->notes = src;
-            src = tmp;
-        } else if (curr_lower == 2 || next_lower == 2) {
-            Note tmp = src->next;
-            free(src);
-            src = tmp;
-        } else if (next_lower == 1) {
-            Note tmp = src->next;
-            Note dest_tmp = dest->next;
-            dest->next = src;
-            src->next = dest_tmp;
-            src = tmp;
-        } else {
-            dest = dest->next; // dest->next != NULL since lower == 1 if so
-        }
-    }
-    free(merge);
-}
-
-// Insert a Note before a given Note, changing dest to be src and src
-// to be the beat after src.
-Note insert_before(Note src, Note dest, Note head) {
-    if (dest == head) {
-        Note tmp_src = src->next;
-        src->next = dest;
-        dest = src;
-        src = tmp_src;
-        return dest;
-    }
-    return head;
-}
-
-////////////////////////////////////////////////////////////////////////
-//                Extension -- Stage 5 Functions                      //
-////////////////////////////////////////////////////////////////////////
-
-void save_track(Track track, char *name) {
-    printf("save_track not implemented yet.\n");
-
-}
-
-Track load_track(char *name) {
-    printf("load_track not implemented yet.\n");
-
-    return NULL;
+    return count; 
 }
