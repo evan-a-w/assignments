@@ -21,6 +21,7 @@
 #include <stdbool.h>
 
 #include "ext_beats.h"
+#include "ext_save.h"
 
 // Add your own #defines here.
 #define OCTAVE_MIN 0
@@ -50,6 +51,7 @@ struct beat {
     struct beat *next;
 };
 
+
 // You don't have to use the provided struct note, you are free to
 // make your own struct instead.
 // If you use the provided struct note, you add fields
@@ -63,6 +65,11 @@ typedef struct note {
 } *Note;
 
 // Add any other structs you define here.
+typedef struct string {
+    char *str;
+    int capacity;
+    int size;
+} String;
 
 //////////////////////////////////////////////////////////////////////
 
@@ -73,6 +80,11 @@ Note create_note(int octave, int key);
 void merge_into(Beat result, Beat merge);
 int merge_range(Beat dest, int range);
 Note insert_before(Note src, Note dest, Note head);
+
+String *new_string(int capacity);
+void push_back(String *str, char ch);
+void pop_back(String *str);
+void free_string(String *str);
 
 // Return a malloced Beat with fields initialized.
 Beat create_beat(void) {
@@ -107,6 +119,7 @@ int add_note_to_beat(Beat beat, int octave, int key) {
    
     // If beat->notes is NULL, the new note must be valid so we add it to the
     // notes and return.
+    // Track 
     if (beat->notes == NULL) {
         beat->notes = create_note(octave, key);
         return VALID_NOTE;
@@ -383,7 +396,7 @@ int remove_selected_beat(Track track) {
 
 // Merge `beats_to_merge` beats into `merged_beats`
 void merge_beats(Track track, int beats_to_merge, int merged_beats) {
-    if (beats_to_merge == merged_beats) {
+    if (beats_to_merge <= merged_beats) {
         return;
     }
     int quotient = beats_to_merge / merged_beats;
@@ -494,12 +507,75 @@ Note insert_before(Note src, Note dest, Note head) {
 ////////////////////////////////////////////////////////////////////////
 
 void save_track(Track track, char *name) {
-    printf("save_track not implemented yet.\n");
+    String *str = new_string(50);
 
+    // Traverse the list of beats, printing info concerning each beat.
+    Beat curr_beat = track->head;
+    Beat selected_beat = track->selected_beat;
+    while (curr_beat != NULL) {
+        if (curr_beat == selected_beat) {
+            push_back(str, '>');
+        } else {
+            push_back(str, ' ');
+        }
+        
+        struct note *curr_note = beat->notes;
+        
+        while (curr_note != NULL) {
+            push_back(str, '0' + curr->note->octave);
+            push_back(str, ' ');
+            push_back(str, '0' + curr->note->key / 10);
+            push_back(str, '0' + curr->note->key % 10);
+            
+            curr_note = curr_note->next;
+        }
+        push_back(str, '\n');
+
+        curr_beat = curr_beat->next; 
+    }
+    push_back(str, '\0');
+    save_string(name, str->str);
+    free_string(str);
+    return;
 }
 
 Track load_track(char *name) {
-    printf("load_track not implemented yet.\n");
-
+    Track trk = create_track();
+    char *contents = load_string(name);
+    int l_beg = 0;
+    int l_end = 0;
+    while (contents[l_beg] != '\0') {
+        while (contents[l_end] != '\n') {
+            l_end++:
+        }
+        
+        if (contents[l_beg])
+        l_beg = ++l_end;
+    }
     return NULL;
+}
+
+String *new_string(int capacity) {
+    String *new = malloc(sizeof(String));
+    new->capacity = capacity;
+    new->size = 0;
+    new->str = calloc(sizeof(char) * capacity);
+    return new;
+}
+
+void push_back(String *str, char ch) {
+    if (str->size == str->capacity) {
+        str->capacity *= 2;
+        str->str = realloc(sizeof(char) * capacity);
+    }
+    str->str[str->size++] = ch;
+}
+
+void pop_back(String *str) {
+    str->size--;
+}
+
+void free_string(String *str) {
+    free(str->str);
+    free(str);
 }
