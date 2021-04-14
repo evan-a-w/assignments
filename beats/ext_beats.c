@@ -145,6 +145,7 @@ int add_note_to_beat(Beat beat, int octave, int key) {
     return VALID_NOTE;
 }
 
+Beat new_beat = create_beat()
 // Returns whether a given octave and key are smaller than a note.
 // Returns 2 if the notes are equal. Always returns 1 if note == NULL.
 int is_lower(int octave, int key, Note note) {
@@ -544,13 +545,24 @@ Track load_track(char *name) {
     char *contents = load_string(name);
     int l_beg = 0;
     int l_end = 0;
+
+    int selected = 0;
+    if(contents[l_beg] == '>') {
+        selected = 1;
+    }
     while (contents[l_beg] != '\0') {
-        while (contents[l_end] != '\n') {
-            l_end++:
-        }
+        Beat new_beat = create_beat();
         
-        if (contents[l_beg])
-        l_beg = ++l_end;
+        // Go note by note now
+        int i = 1;
+        while (contents[l_beg + i] != '\0' && 
+               contents[l_beg + i] != '\n') {
+                 
+            i += 3; 
+        } 
+        if (contents[l_beg + i] != '\0') {
+            l_beg += i;    
+        }
     }
     return NULL;
 }
