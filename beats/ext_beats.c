@@ -80,6 +80,7 @@ Note create_note(int octave, int key);
 void merge_into(Beat result, Beat merge);
 int merge_range(Beat dest, int range);
 Note insert_before(Note src, Note dest, Note head);
+void add_beat_end_track(Track trk, Beat beat);
 
 String *new_string(int capacity);
 void push_back(String *str, char ch);
@@ -145,7 +146,6 @@ int add_note_to_beat(Beat beat, int octave, int key) {
     return VALID_NOTE;
 }
 
-Beat new_beat = create_beat()
 // Returns whether a given octave and key are smaller than a note.
 // Returns 2 if the notes are equal. Always returns 1 if note == NULL.
 int is_lower(int octave, int key, Note note) {
@@ -512,21 +512,13 @@ void save_track(Track track, char *name) {
     // TODO dont save the current beat :(
     // Traverse the list of beats, printing info concerning each beat.
     Beat curr_beat = track->head;
-    Beat selected_beat = track->selected_beat;
     while (curr_beat != NULL) {
-        if (curr_beat == selected_beat) {
-            push_back(str, '>');
-        } else {
-            push_back(str, ' ');
-        }
-        
-        struct note *curr_note = beat->notes;
+        Note curr_note = curr_beat->notes;
         
         while (curr_note != NULL) {
-            push_back(str, '0' + curr->note->octave);
-            push_back(str, ' ');
-            push_back(str, '0' + curr->note->key / 10);
-            push_back(str, '0' + curr->note->key % 10);
+            push_back(str, '0' + curr_note->octave);
+            push_back(str, '0' + curr_note->key / 10);
+            push_back(str, '0' + curr_note->key % 10);
             
             curr_note = curr_note->next;
         }
@@ -543,42 +535,48 @@ void save_track(Track track, char *name) {
 Track load_track(char *name) {
     Track trk = create_track();
     char *contents = load_string(name);
-    int l_beg = 0;
-    int l_end = 0;
+    Beat new_beat;
 
-    int selected = 0;
-    if(contents[l_beg] == '>') {
-        selected = 1;
-    }
-    while (contents[l_beg] != '\0') {
-        Beat new_beat = create_beat();
+    int i = 0;
+    while (contents[i] != '\0') {
+        new_beat = create_beat();
         
         // Go note by note now
-        int i = 1;
-        while (contents[l_beg + i] != '\0' && 
-               contents[l_beg + i] != '\n') {
-                 
-            i += 3; 
+        while (contents[i] != '\n') {
+            int octave = contents[i] - '0';         
+            int key = (contents[i + 1] - '0') * 10 + contents[i + 2] - '0';
+            
+            add_note_to_beat(new_beat, octave, key);
+            i += 3;    
         } 
-        if (contents[l_beg + i] != '\0') {
-            l_beg += i;    
-        }
+         
+        add_beat_end_track(trk, new_beat);
+        i++;
     }
-    return NULL;
+    return trk;
+}
+
+void add_beat_end_track(Track trk, Beat beat) {
+    if (trk->head == NULL) trk->head = beat;
+    else {
+        Beat curr = trk->head;
+        while (curr->next != NULL) curr = curr->next;
+        curr->next = beat;
+    }
 }
 
 String *new_string(int capacity) {
     String *new = malloc(sizeof(String));
     new->capacity = capacity;
     new->size = 0;
-    new->str = calloc(sizeof(char) * capacity);
+    new->str = calloc(capacity, sizeof(char));
     return new;
 }
 
 void push_back(String *str, char ch) {
     if (str->size == str->capacity) {
         str->capacity *= 2;
-        str->str = realloc(sizeof(char) * capacity);
+        str->str = realloc(str->str, sizeof(char) * str->capacity);
     }
     str->str[str->size++] = ch;
 }
