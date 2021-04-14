@@ -508,7 +508,7 @@ Note insert_before(Note src, Note dest, Note head) {
 
 void save_track(Track track, char *name) {
     String *str = new_string(50);
-
+    // TODO dont save the current beat :(
     // Traverse the list of beats, printing info concerning each beat.
     Beat curr_beat = track->head;
     Beat selected_beat = track->selected_beat;
