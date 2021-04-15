@@ -4,114 +4,57 @@ import os
 import subprocess
 import random as rd
 
-def test_functions(cmd_stream):
+def test_functions(command_list, fails):
     my_path = ["./ext_beats"]
     ref = ['1511', 'cs_beats_ext']
     slide_path = "/import/adams/5/z5368211/assignments/beats"
 
-    command_list = "\n".join([str(i) for i in cmd_stream])
     cmd_stream = bytes(command_list + "\x04", 'ascii')
 
-    #p1 = subprocess.Popen(my_path, cwd=slide_path, stdin=subprocess.PIPE, stdout=subprocess.PIPE).communicate(input=cmd_stream)[0]
-    res1 = subprocess.Popen(my_path, cwd=slide_path, stdin=subprocess.PIPE, stdout=subprocess.PIPE).communicate(input=cmd_stream)[0]
-    #p1.stdin.write(cmd_stream)
-    #p1.stdin.flush()
-    #res1 = p1.stdout.read()
+    r1 = subprocess.Popen(my_path, cwd=slide_path, stdin=subprocess.PIPE, stdout=subprocess.PIPE).communicate(input=cmd_stream)[0]
+    r2 = subprocess.Popen(ref, cwd=slide_path, stdin=subprocess.PIPE, stdout=subprocess.PIPE).communicate(input=cmd_stream)[0]
 
-    #p2 = subprocess.Popen(ref, cwd=slide_path, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
-    #p2.stdin.write(cmd_stream)
-    #p2.stdin.flush()
-    #res2 = p2.stdout.read()
-    res2 = subprocess.Popen(ref, cwd=slide_path, stdin=subprocess.PIPE, stdout=subprocess.PIPE).communicate(input=cmd_stream)[0]
-
-    if res1 == res2:
-        print("Failure with: " + command_list + "\n")
-
-def random_block():
-    rand_num = rd.random()
-    num = 0
-    if rand_num < 0.75:
-        num = 1
-    elif rand_num < 0.875:
-        num = 2
+    if r1 != r2:
+        print("Failure with fail%d.in\n" % fails)
+        f = open("fail%d.in" % fails, "w")
+        f.write(command_list)
+        f.close()
+        return 1
     else:
-        num =  rd.randint(4,9)
-
-    rand_num = rd.random()
-    if rand_num < 0.3:
-        return num
-    else:
-        return -num
-
-def random_command():
-    rand_num = rd.random()
-    if rand_num < 0.333:
-        rand_num = rd.random()
-        if rand_num < 0.75:
-            lst = [1]
-            if rand_num < 0.375:
-                lst.append(1)
-            else:
-                lst.append(-1)
-            return lst
-        else:
-            return [1,rd.randint(-10,10)]
-    elif rand_num < 0.666:
-        return [3]
-    else:
-        rand_num = rd.random()
-        if rand_num < 0.75:
-            lst = [4]
-            if rand_num < 0.375:
-                lst.append(2)
-            else:
-                lst.append(1)
-            return lst
-        else:
-            return [4,rd.randint(-10,10)]
-
-def valid(y, x):
-    if 0 <= y and y <= 14:
-        if 0 <= x and x <= 14:
-            return True
-    return False
+        return 0
 
 def cmd_gen():
-    block_count = rd.randint(5,50)
-    cmd_list = [block_count]
-    for i in range(block_count):
-        y = rd.randint(-2,16)
-        x = rd.randint(-2,16)
-        cmd_list.append(y)
-        cmd_list.append(x)
-        cmd_list.append(random_block())
-    no_pos = True
-    no_valid = True
-    i = 3
-    while i < len(cmd_list):
-        if cmd_list[i] > 0:
-            no_pos = False
-        if valid(cmd_list[i-2], cmd_list[i-1]):
-            no_valid = False
-        if not (no_pos or no_valid):
-            break
-        i += 3
+    cmd_list = ""
 
-    if no_pos:
-        cmd_list[3] = -cmd_list[3]
-        if not valid(cmd_list[1], cmd_list[2]):
-            cmd_list[1] = 1
-            cmd_list[2] = 1
-    if no_valid:
-        cmd_list[1] = 1
-        cmd_list[2] = 1
-        if cmd_list[3] < 0:
-            cmd_list[3] = -cmd_list[3]
-        
-    command_count = rd.randint(1,50)
-    for _ in range(command_count):
-        for i in random_command():
-            cmd_list.append(i)
+    no_beats = rd.randint(20,200)
+    for beat in range(no_beats):
+        omax = (0,0)
+        for note in range(rd.randint(5,200)):
+            octave = rd.randint(0,9)
+            key = rd.randint(0,12)
+            cmd_list += "a %d %d\n" % (octave, key)
+            if omax[0] < octave:
+                break
+            elif omax[0] == octave and key <= omax[1]:
+                break
+
+            if octave == omax[0] and key > omax[1]:
+                omax = (octave,key)
+            elif octave > omax[0]:
+                omax = (octave,key)
+
+        cmd_list += "A\n"
+    cmd_list += "P\n"
+    cmd_list += ">\n"
+    cmd_list += "S test\n"
+
+    beats_to_merge = rd.randint(1,no_beats)
+    merged_beats = rd.randint(1,beats_to_merge)
+    cmd_list += "M %d %d\n" % (beats_to_merge, merged_beats)
+    cmd_list += "P\n"
+
+    cmd_list += "L test\n"
+    cmd_list += "P\n"
 
     return cmd_list
 
@@ -122,8 +65,12 @@ if __name__ == "__main__":
         pass
     
     count = 0
+    f = open("last_test.in", "w")
+    f.write(cmd_gen())
+    f.close()
+    fails = 0
     while True:
-        test_functions(cmd_gen())
+        fails += test_functions(cmd_gen(), fails)
         count += 1
         if count % 1000 == 0:
             print(count)

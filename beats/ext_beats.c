@@ -164,6 +164,7 @@ int is_lower(int octave, int key, Note note) {
 // of the function. This pointer is then returned.
 Note create_note(int octave, int key) {
     Note new_note = malloc(sizeof(struct note));
+    assert(new_note != NULL);
     new_note->octave = octave;
     new_note->key = key;
     new_note->next = NULL;
@@ -223,6 +224,7 @@ Track create_track(void) {
     // Stage 1 autotests call create_track but expect it to return NULL
     // (so this function should do nothing in Stage 1).
     Track track = malloc(sizeof(struct track));
+    assert(track != NULL);
     track->head = NULL;
     track->selected_beat = NULL;
     return track;
@@ -509,7 +511,6 @@ Note insert_before(Note src, Note dest, Note head) {
 
 void save_track(Track track, char *name) {
     String *str = new_string(50);
-    // TODO dont save the current beat :(
     // Traverse the list of beats, printing info concerning each beat.
     Beat curr_beat = track->head;
     while (curr_beat != NULL) {
