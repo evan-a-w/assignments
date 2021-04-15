@@ -553,6 +553,7 @@ Track load_track(char *name) {
         add_beat_end_track(trk, new_beat);
         i++;
     }
+    free(contents);
     return trk;
 }
 

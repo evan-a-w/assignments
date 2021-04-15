@@ -3,18 +3,88 @@
 Write a summary of how you made the changes that you did:
 
 [E1:Summary] {{{
+In order to address the overall problem in the first extension, I split it into
+several smaller problems.
 
+
+The first was to merge one beat into another, freeing the first beat afterwards.
+I solved this by looping through the notes in the source and destination lists
+and using some conditional branches to determine what to do next:
+
+1. If the current source note was less than the current destination note 
+(as determined by the rules given in stage 1), the source note is inserted before
+the destination note and then the source note becomes the next source note.
+2. If the source note is less than the next destination note, it is inserted 
+after the current destination note and moves onto the next note.
+3. If the source and destination note / next destination note are equal, the source note is freed.
+4. Otherwise, the dest note becomes the next destination note.
+
+This allows for one note to be merged into another, preserving the sorting of the list.
+   
+
+The next problem involved merging multiple beats into a single beat; however,
+this is easily solved by simply repeatedly merging a single beat into the destination beat.
+
+
+Finally, merging multiple beats into multiple beats involves some arithmetic.
+Considering beats_to_merge and merged_beats, we can obtain two numbers, the quotient
+(beats_to_merge / merged_beats) and the remainder (beats_to_merge % merged_beats).
+We can then make a loop with an end condition that the number of beats merged equals
+beats_to_merge. On the first iteration, we merge quotient + remainder beats into
+the selected beat. We then move onto the beat after the selected beat. In the next
+iterations, we merge remainder beats into the destination beat.
 }}}
 
 Write two tests to test your implementation of Extension 1 (Merging).
 
 *This test should *ONLY* test merging into 1 beat.*
 [E1:Test 1] {{{
+a 8 8
+A
+a 9 9
+A
+a 7 7
+A
+a 5 5
+a 5 6
+a 5 9
+a 8 8
+A
+a 4 4
+A
+a 7 7
+A
+a 5 5
+A
+>
+P
+M 7 1
+P
 
 }}}
 
 *This test can test merging into any number of beats*
 [E1:Test 2] {{{
+a 3 3
+A
+a 2 2
+A
+a 2 3
+A
+a 2 1
+A
+a 4 4
+A
+a 5 5
+A
+a 6 6
+A
+a 8 8
+A
+>
+P
+M 8 3
+P
 
 }}}
 
@@ -23,14 +93,50 @@ Write two tests to test your implementation of Extension 1 (Merging).
 Write a summary of how you made the changes that you did:
 
 [E2:Summary] {{{
+For the saving tracks part of the extension, I created a string where a representation
+of the notes for each beat is on its own line. Since it is not recorded whether
+a beat is the selected beat, all that is needed are three numbers for each note in a beat.
+These are the octave, the first digit of the key, and the second digit of the key.
 
+Thus, I looped over all of the notes in each beat and pushed each of these values 
+into the overall string before adding a newline. The string I used was also dynamically
+allocated memory so that it works no matter how large the track becomes.
+
+
+For the reading tracks part, I simply looped over each line in the string, created a beat
+for that line, and added notes to this beat for every 3 character substring in the line.
 }}}
 
 Write two tests to test your implementation of Extension 2 (Save and Restore).
 
 [E2:Test 1] {{{
+a 1 1
+a 2 2
+a 3 3
+A
+a 8 8
+a 9 9
+A
+a 1 1
+A
+>
+>
+P
+S ext2_test1
+a 1 1
+A
+P
+L ext2_test1
+P
 
 }}}
 [E2:Test 2] {{{
+a 1 1
+A
+S test
+a 2 2
+A
+L test
+P
 
 }}}
