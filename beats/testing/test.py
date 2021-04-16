@@ -26,7 +26,7 @@ def test_functions(command_list, fails):
 def cmd_gen():
     cmd_list = ""
 
-    no_beats = rd.randint(10,50)
+    no_beats = rd.randint(30,200)
     for beat in range(no_beats):
         omax = (0,0)
         for note in range(rd.randint(5,200)):

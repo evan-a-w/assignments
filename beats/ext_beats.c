@@ -2,9 +2,9 @@
 // beats.c
 //
 // This program was written by Evan Williams (z5368211)
-// on 13/04/2021
+// on 13/04/2021 - 16/04/2021
 //
-// Version 1.0.0: Assignment released.
+// This program implements the functionality to...
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -16,7 +16,6 @@
 // But note you are not permitted to use functions from string.h
 // so do not #include <string.h>
 //
-#include "beats.h"
 #include <limits.h>
 #include <stdbool.h>
 
