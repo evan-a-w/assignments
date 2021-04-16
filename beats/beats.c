@@ -18,9 +18,9 @@
 
 // Add your own #defines here.
 #define OCTAVE_MIN 0
-#define OCTAVE_MAX 10
+#define OCTAVE_MAX 9
 #define KEY_MIN 0
-#define KEY_MAX 12
+#define KEY_MAX 11
 
 //////////////////////////////////////////////////////////////////////
 
@@ -91,10 +91,10 @@ Beat create_beat(void) {
 // Add a note to the end of a beat.
 int add_note_to_beat(Beat beat, int octave, int key) {
     // If the octave is not valid, return INVALID_NOTE
-    if (OCTAVE_MIN > octave || octave >= OCTAVE_MAX) {
+    if (OCTAVE_MIN > octave || octave > OCTAVE_MAX) {
         return INVALID_OCTAVE;
     // Do the same for the key
-    } else if (KEY_MIN > key || key >= KEY_MAX) {
+    } else if (KEY_MIN > key || key > KEY_MAX) {
         return INVALID_KEY;
     }
    

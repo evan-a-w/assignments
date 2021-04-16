@@ -26,12 +26,12 @@ def test_functions(command_list, fails):
 def cmd_gen():
     cmd_list = ""
 
-    no_beats = rd.randint(20,200)
+    no_beats = rd.randint(10,50)
     for beat in range(no_beats):
         omax = (0,0)
         for note in range(rd.randint(5,200)):
-            octave = rd.randint(0,9)
-            key = rd.randint(0,12)
+            octave = rd.randint(-2,11)
+            key = rd.randint(-2,13)
             cmd_list += "a %d %d\n" % (octave, key)
             if omax[0] < octave:
                 break
