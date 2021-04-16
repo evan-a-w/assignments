@@ -442,7 +442,7 @@ int merge_range(Beat dest, int range) {
     int i = 1;
     while (dest->next != NULL && i < range) {
         Beat tmp = dest->next->next;
-        merge_into(dest, dest->next);
+        merge_next(dest);
         dest->next = tmp;
         i++;
     }
@@ -451,16 +451,40 @@ int merge_range(Beat dest, int range) {
 }
 
 // Merge the merge Beat into the result Beat. This works for sure.
-void merge_into(Beat result, Note merge) {
-    if (merge->notes == NULL) {
-        return;
+void merge_next(Beat result) {
+    result->notes = rec_merge(result->notes, result->notes, result->next->notes);
+    Beat tmp = result->next;
+    result->next = tmp->next; 
+    free(tmp);
+}
+
+Note rec_merge(Note head, Note res_notes, Note merge_notes) {
+    if (head == NULL) {
+        return merge_notes;
+    } else if (merge_notes == NULL) {
+        return head;
     }
-    if (result->notes == NULL) {
-        result->notes = merge->notes;
-        result->next = merge->next;
-        free(merge);
-        return;
+
+    l1 = is_lower(merge_notes->octave, merge_notes->key, res_notes);
+    l2 = is_lower(merge_notes->octave, merge_notes->key, res_notes->next);
+    if (l1 == 1) {
+        Note tmp = merge_notes->next;
+        merge_notes->next = res_notes;
+        return rec_merge(merge_notes, merge_notes, tmp);
+    } else if (l2 == 1) {
+        Note tmp = merge_notes->next;
+        Note tmp2 = res_notes->next;
+        res_notes->next = merge_notes;
+        merge_notes->next = tmp2;
+        return rec_merge(head, merge_notes, tmp);
+    } else if (l1 == 2 || l2 == 2) {
+        Note tmp = merge_notes->next;
+        free(merge_notes);
+        return rec_merge(head, res_notes, tmp);
+    } else {
+        return rec_merge(head, res_notes->next, merge_notes); 
     }
+    return NULL;
 }
 
 // Insert a Note before a given Note, changing dest to be src and src
