@@ -535,8 +535,11 @@ void save_track(Track track, char *name) {
 }
 
 Track load_track(char *name) {
-    Track trk = create_track();
     char *contents = load_string(name);
+    if (contents == NULL) {
+        return NULL;
+    }
+    Track trk = create_track();
     Beat new_beat;
 
     int i = 0;
