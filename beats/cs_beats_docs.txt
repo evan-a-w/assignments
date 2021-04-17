@@ -301,6 +301,7 @@ P
 
 }}}
 [E2:Test 2] {{{
+S empty
 a 2 10
 A
 a 0 4
@@ -551,5 +552,7 @@ P
 L test
 P
 L test1
+P
+L empty
 P
 }}}
