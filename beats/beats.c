@@ -38,6 +38,8 @@ typedef struct note {
 
 Beat create_beat(void);
 Note create_note(int octave, int key);
+
+int note_not_valid(int octave, int key);
 int is_lower(int octave, int key, Note note);
 
 
@@ -47,16 +49,14 @@ int is_lower(int octave, int key, Note note);
 
 // Add a note to the end of a beat.
 int add_note_to_beat(Beat beat, int octave, int key) {
-    // If the octave is not valid, return INVALID_NOTE
-    if (OCTAVE_MIN > octave || octave > OCTAVE_MAX) {
-        return INVALID_OCTAVE;
-    // Do the same for the key
-    } else if (KEY_MIN > key || key > KEY_MAX) {
-        return INVALID_KEY;
+    // If the octave and key are not valid, return the error code
+    // (INVALID_OCTAVE or INVALID_KEY).
+    int not_valid = note_not_valid(octave, key);
+    if (not_valid) {
+        return not_valid;
     }
    
-    // If beat->notes is NULL, the new note must be valid so we add it to the
-    // notes and return.
+    // If beat->notes is NULL, we simply add the note to the list of notes.
     if (beat->notes == NULL) {
         beat->notes = create_note(octave, key);
         return VALID_NOTE;
@@ -79,6 +79,19 @@ int add_note_to_beat(Beat beat, int octave, int key) {
     // The last note is curr_note, so we simply add to that.
     curr_note->next = create_note(octave, key); 
 
+    return VALID_NOTE;
+}
+
+// Returns INVALID_OCTAVE if the octave is not valid, INVALID_KEY if the key
+// is not valid and VALID_NOTE otherwise.
+int note_not_valid(int octave, int key) {
+    // If the octave is not valid, return INVALID_OCTAVE.
+    if (OCTAVE_MIN > octave || octave > OCTAVE_MAX) {
+        return INVALID_OCTAVE;
+    // Do the same for the key
+    } else if (KEY_MIN > key || key > KEY_MAX) {
+        return INVALID_KEY;
+    }
     return VALID_NOTE;
 }
 
