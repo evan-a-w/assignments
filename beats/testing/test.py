@@ -25,36 +25,36 @@ def test_functions(command_list, fails):
 
 def cmd_gen():
     cmd_list = ""
+    for i in range(3):
+        no_beats = rd.randint(30,200)
+        for beat in range(no_beats):
+            omax = (0,0)
+            for note in range(rd.randint(5,200)):
+                octave = rd.randint(-2,11)
+                key = rd.randint(-2,13)
+                cmd_list += "a %d %d\n" % (octave, key)
+                if omax[0] < octave:
+                    break
+                elif omax[0] == octave and key <= omax[1]:
+                    break
 
-    no_beats = rd.randint(30,200)
-    for beat in range(no_beats):
-        omax = (0,0)
-        for note in range(rd.randint(5,200)):
-            octave = rd.randint(-2,11)
-            key = rd.randint(-2,13)
-            cmd_list += "a %d %d\n" % (octave, key)
-            if omax[0] < octave:
-                break
-            elif omax[0] == octave and key <= omax[1]:
-                break
+                if octave == omax[0] and key > omax[1]:
+                    omax = (octave,key)
+                elif octave > omax[0]:
+                    omax = (octave,key)
 
-            if octave == omax[0] and key > omax[1]:
-                omax = (octave,key)
-            elif octave > omax[0]:
-                omax = (octave,key)
+            cmd_list += "A\n"
+        cmd_list += "P\n"
+        cmd_list += ">\n"
+        cmd_list += "S test\n"
 
-        cmd_list += "A\n"
-    cmd_list += "P\n"
-    cmd_list += ">\n"
-    cmd_list += "S test\n"
+        beats_to_merge = rd.randint(-2,no_beats+2)
+        merged_beats = rd.randint(-2,beats_to_merge+2)
+        cmd_list += "M %d %d\n" % (beats_to_merge, merged_beats)
+        cmd_list += "P\n"
 
-    beats_to_merge = rd.randint(-2,no_beats)
-    merged_beats = rd.randint(-2,beats_to_merge)
-    cmd_list += "M %d %d\n" % (beats_to_merge, merged_beats)
-    cmd_list += "P\n"
-
-    cmd_list += "L test\n"
-    cmd_list += "P\n"
+        cmd_list += "L test\n"
+        cmd_list += "P\n"
 
     return cmd_list
 
