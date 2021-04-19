@@ -48,8 +48,8 @@ def cmd_gen():
     cmd_list += ">\n"
     cmd_list += "S test\n"
 
-    beats_to_merge = rd.randint(1,no_beats)
-    merged_beats = rd.randint(1,beats_to_merge)
+    beats_to_merge = rd.randint(-2,no_beats)
+    merged_beats = rd.randint(-2,beats_to_merge)
     cmd_list += "M %d %d\n" % (beats_to_merge, merged_beats)
     cmd_list += "P\n"
 
@@ -72,5 +72,5 @@ if __name__ == "__main__":
     while True:
         fails += test_functions(cmd_gen(), fails)
         count += 1
-        if count % 1000 == 0:
+        if count % 100 == 0:
             print(count)
