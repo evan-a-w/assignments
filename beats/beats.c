@@ -2,10 +2,10 @@
 // beats.c
 //
 // This program was written by Evan Williams (z5368211)
-// on 06/04/2021 - 16/04/2021
+// on 06/04/2021 - 19/04/2021
 //
-// This program implements the functionality to work with beats containing a
-// list of notes and tracks containing a list of beats.
+// This program implements the functionality to create tracks of music
+// containing beats and notes.
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -42,6 +42,7 @@ Note create_note(int octave, int key);
 int note_not_valid(int octave, int key);
 int is_lower(int octave, int key, Note note);
 
+void delete_selected_beat(Track track);
 
 //////////////////////////////////////////////////////////////////////
 //                        Stage 1 Functions                         //
@@ -304,6 +305,22 @@ int remove_selected_beat(Track track) {
         return TRACK_STOPPED;
     }
     
+    delete_selected_beat(track);
+    
+    // If there is a selected beat, return TRACK_PLAYING. Otherwise, return
+    // TRACK_STOPPED.
+    if (track->selected_beat != NULL) {
+        return TRACK_PLAYING;
+    }
+
+    return TRACK_STOPPED;
+}
+
+// This function implements the logic to loop over the beats in a track
+// and delete the selected beat. This modifies the track that is passed
+// as a parameter.
+void delete_selected_beat(Track track) {
+    Beat selected_beat = track->selected_beat;
     Beat curr_beat = track->head;
     if (curr_beat == selected_beat) {
         // Set the head to the next beat and free the current beat.
@@ -325,13 +342,4 @@ int remove_selected_beat(Track track) {
         selected_beat->next = NULL;
         free_beat(selected_beat);
     }
-
-    
-    // If there is a selected beat, return TRACK_PLAYING. Otherwise, return
-    // TRACK_STOPPED.
-    if (track->selected_beat != NULL) {
-        return TRACK_PLAYING;
-    }
-
-    return TRACK_STOPPED;
 }
