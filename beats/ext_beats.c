@@ -2,9 +2,9 @@
 // beats.c
 //
 // This program was written by Evan Williams (z5368211)
-// on 13/04/2021 - 16/04/2021
+// on 13/04/2021 - 19/04/2021
 //
-// This program implements the functionality to...
+// This program implements the extension commands for the cs_beats program.
 
 #include <stdio.h>
 #include <stdlib.h>
