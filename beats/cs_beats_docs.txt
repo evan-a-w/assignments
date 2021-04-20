@@ -280,6 +280,7 @@ for that line, and added notes to this beat for every 3 character substring in t
 Write two tests to test your implementation of Extension 2 (Save and Restore).
 
 [E2:Test 1] {{{
+L fail
 a 1 1
 a 2 2
 a 3 3

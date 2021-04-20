@@ -1,0 +1,19 @@
+L fail
+a 1 1
+a 2 2
+a 3 3
+A
+a 8 8
+a 9 9
+A
+a 1 1
+A
+>
+>
+P
+S ext2_test1
+a 1 1
+A
+P
+L ext2_test1
+P
