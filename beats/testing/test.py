@@ -26,7 +26,7 @@ def test_functions(command_list, fails):
 def cmd_gen():
     cmd_list = ""
     for i in range(3):
-        no_beats = rd.randint(30,200)
+        no_beats = rd.randint(50, 10000)
         for beat in range(no_beats):
             omax = (0,0)
             for note in range(rd.randint(5,200)):
@@ -72,5 +72,5 @@ if __name__ == "__main__":
     while True:
         fails += test_functions(cmd_gen(), fails)
         count += 1
-        if count % 100 == 0:
-            print(count)
+        #if count % 100 == 0:
+        print(count)

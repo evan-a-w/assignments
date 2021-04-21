@@ -528,7 +528,6 @@ void save_track(Track track, char *name) {
 
         curr_beat = curr_beat->next; 
     }
-    push_back(str, '\0');
     save_string(name, str->str);
     free_string(str);
     return;
@@ -554,7 +553,7 @@ Track load_track(char *name) {
             add_note_to_beat(new_beat, octave, key);
             i += 3;    
         } 
-         
+        if (trk->) 
         add_beat_end_track(trk, new_beat);
         i++;
     }
@@ -575,16 +574,18 @@ String *new_string(int capacity) {
     String *new = malloc(sizeof(String));
     new->capacity = capacity;
     new->size = 0;
-    new->str = calloc(capacity, sizeof(char));
+    new->str = calloc(capacity + 1, sizeof(char));
+    new->str[0] = '\0';
     return new;
 }
 
 void push_back(String *str, char ch) {
-    if (str->size == str->capacity) {
-        str->capacity *= 2;
-        str->str = realloc(str->str, sizeof(char) * str->capacity);
+    if (str->size >= str->capacity) {
+        str->capacity *= 3;
+        str->str = realloc(str->str, sizeof(char) * (str->capacity + 1));
     }
     str->str[str->size++] = ch;
+    str->str[str->size] = '\0';
 }
 
 void pop_back(String *str) {
