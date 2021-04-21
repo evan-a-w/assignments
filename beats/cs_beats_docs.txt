@@ -303,6 +303,10 @@ P
 }}}
 [E2:Test 2] {{{
 S empty
+L 1**
+P
+L empty
+P
 a 2 10
 A
 a 0 4

@@ -2,7 +2,7 @@
 // beats.c
 //
 // This program was written by Evan Williams (z5368211)
-// on 06/04/2021 - 19/04/2021
+// on 06/04/2021 - 21/04/2021
 //
 // This program implements the functionality to create tracks of music
 // containing beats and notes.
@@ -36,12 +36,15 @@ typedef struct note {
     struct note *next;
 } *Note;
 
+// Creation functions
 Beat create_beat(void);
 Note create_note(int octave, int key);
 
+// Note helper functions
 int note_not_valid(int octave, int key);
 int is_lower(int octave, int key, Note note);
 
+// Destruction functions
 void delete_selected_beat(Track track);
 
 //////////////////////////////////////////////////////////////////////
@@ -50,8 +53,8 @@ void delete_selected_beat(Track track);
 
 // Add a note to the end of a beat.
 int add_note_to_beat(Beat beat, int octave, int key) {
-    // If the octave and key are not valid, return the error code
-    // (INVALID_OCTAVE or INVALID_KEY).
+    // If the octave and key are not valid, return the error code returned by
+    // the note_not_valid function (INVALID_OCTAVE or INVALID_KEY).
     int not_valid = note_not_valid(octave, key);
     if (not_valid) {
         return not_valid;
