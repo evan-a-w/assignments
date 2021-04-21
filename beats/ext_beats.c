@@ -2,7 +2,7 @@
 // beats.c
 //
 // This program was written by Evan Williams (z5368211)
-// on 13/04/2021 - 21/04/2021
+// on 13/04/2021 - 22/04/2021
 //
 // This program implements the extension commands for the cs_beats program.
 
@@ -539,6 +539,7 @@ Track load_track(char *name) {
         return NULL;
     }
     Track trk = create_track();
+    Beat last_beat = trk->head;
     Beat new_beat;
 
     int i = 0;
@@ -553,8 +554,13 @@ Track load_track(char *name) {
             add_note_to_beat(new_beat, octave, key);
             i += 3;    
         } 
-        if (trk->) 
-        add_beat_end_track(trk, new_beat);
+        if (last_beat == NULL) {
+            trk->head = new_beat;
+            last_beat = new_beat;
+        } else {
+            last_beat->next = new_beat;
+            last_beat = last_beat->next;
+        }
         i++;
     }
     free(contents);

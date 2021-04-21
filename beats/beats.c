@@ -2,7 +2,7 @@
 // beats.c
 //
 // This program was written by Evan Williams (z5368211)
-// on 06/04/2021 - 21/04/2021
+// on 06/04/2021 - 22/04/2021
 //
 // This program implements the functionality to create tracks of music
 // containing beats and notes.
@@ -13,12 +13,13 @@
 
 #include "beats.h"
 #include <limits.h>
-#include <stdbool.h>
 
 #define OCTAVE_MIN 0
 #define OCTAVE_MAX 9
 #define KEY_MIN 0
 #define KEY_MAX 11
+#define TRUE 1
+#define FALSE 0
 
 struct track {
     struct beat *head;
@@ -92,8 +93,8 @@ int note_not_valid(int octave, int key) {
     // If the octave is not valid, return INVALID_OCTAVE.
     if (OCTAVE_MIN > octave || octave > OCTAVE_MAX) {
         return INVALID_OCTAVE;
-    // Do the same for the key
     } else if (KEY_MIN > key || key > KEY_MAX) {
+        // Do the same for the key
         return INVALID_KEY;
     }
     return VALID_NOTE;
@@ -102,12 +103,12 @@ int note_not_valid(int octave, int key) {
 // Returns whether a given octave and key are smaller than a note.
 int is_lower(int octave, int key, Note note) {
     // If the octave is lower than the max, it is lower.
-    // ALso, if the octaves are equal but the key is not greater, it is lower.
+    // Also, if the octaves are equal but the key is not greater, it is lower.
     if (octave < note->octave || (octave == note->octave && key <= note->key)) {
-        return 1;
+        return TRUE;
     }
 
-    return 0;
+    return FALSE;
 }
 
 // Malloc a note pointer and assign its octave and key values to the parameters
@@ -140,7 +141,7 @@ void print_beat(Beat beat) {
     return;
 }
 
-// Count the number of notes in a beat that are in a given octave.
+// Returns the count of the number of notes in a beat in a given octave.
 int count_notes_in_octave(Beat beat, int octave) {
     struct note *curr_note = beat->notes;
 
@@ -192,9 +193,8 @@ void add_beat_to_track(Track track, Beat beat) {
     if (track->selected_beat != NULL) {
         beat->next = track->selected_beat->next;
         track->selected_beat->next = beat;
-
-    // Otherwise, put it as the first element.
     } else {
+        // Otherwise, put it as the first element.
         beat->next = track->head;
         track->head = beat;
     }
@@ -207,9 +207,8 @@ int select_next_beat(Track track) {
     // that the track is playing.
     if (track->selected_beat == NULL) {
         track->selected_beat = track->head;
-
-    // Otherwise, change the current beat to the beat after the current beat.
     } else {
+        // Otherwise, change the current beat to the beat after the current beat.
         track->selected_beat = track->selected_beat->next;
     }
 
